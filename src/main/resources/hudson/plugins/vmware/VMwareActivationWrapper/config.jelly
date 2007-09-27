@@ -7,7 +7,8 @@
         <f:textbox name="vmware-activation.username" value="${instance.username}"/>
     </f:entry>
     <f:entry title="Password">
-        <f:textbox name="vmware-activation.password" value="${instance.password}"/>
+        <input class="setting-input" name="vmware-activation.password"
+                 type="password" value="${instance.password}"/>
     </f:entry>
     <f:entry title="Port">
         <f:textbox name="vmware-activation.portNumber" value="${instance.portNumber}"/>
