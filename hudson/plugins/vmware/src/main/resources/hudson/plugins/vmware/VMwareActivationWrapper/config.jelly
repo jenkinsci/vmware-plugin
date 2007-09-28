@@ -1,0 +1,31 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <f:entry title="VMware VIX Library Path">
+        <f:textbox name="vmware-activation.vixLibraryPath" value="${instance.vixLibraryPath}"/>
+    </f:entry>
+    <f:entry title="Host">
+        <f:textbox name="vmware-activation.hostName" value="${instance.hostName}"/>
+    </f:entry>
+    <f:entry title="Username">
+        <f:textbox name="vmware-activation.username" value="${instance.username}"/>
+    </f:entry>
+    <f:entry title="Password">
+        <input class="setting-input" name="vmware-activation.password"
+                 type="password" value="${instance.password}"/>
+    </f:entry>
+    <f:entry title="Port">
+        <f:textbox name="vmware-activation.portNumber" value="${instance.portNumber}"/>
+    </f:entry>
+    <f:entry title="VMX Config File">
+        <f:textbox name="vmware-activation.configFile" value="${instance.configFile}"/>
+    </f:entry>
+    <f:entry title="Revert to snapshot before startup">
+        <f:checkbox name="vmware-activation.revert" checked="${instance.revert}"/>
+    </f:entry>
+    <f:entry title="Wait for VMware Tools startup">
+        <f:checkbox name="vmware-activation.waitForTools" checked="${instance.waitForTools}"/>
+    </f:entry>
+    <f:entry title="Suspend (don't power off) when build completes">
+        <f:checkbox name="vmware-activation.suspend" checked="${instance.suspend}"/>
+    </f:entry>
+</j:jelly>
