@@ -25,6 +25,7 @@ import java.util.logging.Logger;
  * @since 26-Sep-2007 16:06:28
  */
 public class VMwareActivationWrapper extends BuildWrapper {
+    public String vixLibraryPath;
     public String hostName;
     public String username;
     public String password;
@@ -35,56 +36,66 @@ public class VMwareActivationWrapper extends BuildWrapper {
 
     public Environment setUp(Build build, Launcher launcher, BuildListener buildListener) throws IOException, InterruptedException {
         class EnvironmentImpl extends Environment {
-            private final int vmHandle;
-            private final int hostHandle;
+            private final VirtualMachine vm;
+            private final Host host;
 
-            public EnvironmentImpl(int hostHandle, int vmHandle) {
-                this.vmHandle = vmHandle;
-                this.hostHandle = hostHandle;
+            public EnvironmentImpl(Host host, VirtualMachine vm) {
+                this.vm = vm;
+                this.host = host;
             }
 
             public boolean tearDown(Build build, BuildListener buildListener) throws IOException, InterruptedException {
                 if (suspend) {
                     buildListener.getLogger().println("[VMware] Suspending virtual machine.");
-                    VMWareVIX.vixVMSuspend(vmHandle);
+                    vm.suspend();
                 } else {
                     buildListener.getLogger().println("[VMware] Powering off virtual machine.");
-                    VMWareVIX.vixVMPowerOff(vmHandle);
+                    vm.powerOff();
                 }
+                vm.close();
                 buildListener.getLogger().println("[VMware] Disconnecting");
-                VMWareVIX.vixHostDisconnect(hostHandle);
+                host.disconnect();
                 buildListener.getLogger().println("[VMware] Done");
                 return true;
             }
         }
-        int hostHandle = 0;
-        int vmHandle = 0;
-        buildListener.getLogger().println("[VMware] Connecting to VMware Server host " + hostName + ":" + portNumber
-                + " as user " + username);
-        hostHandle = VMWareVIX.vixHostConnect(hostName, username, password, portNumber);
-        if (hostHandle == 0) {
-            buildListener.getLogger().println("[VMware] Could not connect to VMware Server");
-            build.setResult(Result.FAILURE);
-            return null;
-        }
         try {
-            buildListener.getLogger().println("[VMware] Opening virtual machine: " + configFile);
-            vmHandle = VMWareVIX.vixVMOpen(hostHandle, configFile);
-            buildListener.getLogger().println("[VMware] Powering up virtual machine.");
-            VMWareVIX.vixVMPowerOn(vmHandle);
-            if (waitForTools) {
-                buildListener.getLogger().println("[VMware] Waiting for VMware Tools to start in virtual machine.");
-                VMWareVIX.vixVMWaitForToolsInGuest(vmHandle);
+            VMware library;
+            if (vixLibraryPath == null || "".equals(vixLibraryPath.trim())) {
+                library = new VMware();
+            } else {
+                library = new VMware(vixLibraryPath);
             }
-            buildListener.getLogger().println("[VMware] Ready");
-        } catch (Throwable t) {
-            buildListener.getLogger().println("[VMware] Unknown error: " + t.getMessage());
-            t.printStackTrace(buildListener.getLogger());
+            buildListener.getLogger().println("[VMware] Connecting to VMware Server host " + hostName + ":" + portNumber
+                    + " as user " + username);
+            Host host = library.connect(Host.HostType.VMWARE_SERVER, hostName, portNumber, username, password);
+            try {
+                buildListener.getLogger().println("[VMware] Opening virtual machine: " + configFile);
+                VirtualMachine vm = host.open(configFile);
+                try {
+                    buildListener.getLogger().println("[VMware] Powering up virtual machine.");
+                    vm.powerOn();
+                    if (waitForTools) {
+                        buildListener.getLogger()
+                                .println("[VMware] Waiting for VMware Tools to start in virtual machine.");
+                        vm.waitForToolsInGuest(0);
+                    }
+                    buildListener.getLogger().println("[VMware] Ready");
+                    return new EnvironmentImpl(host, vm);
+                } catch (VMwareRuntimeException e) {
+                    vm.close();
+                    throw e;
+                }
+            } catch (VMwareRuntimeException e) {
+                host.disconnect();
+                throw e;
+            }
+        } catch (VMwareRuntimeException e) {
+            buildListener.getLogger().println("[VMware] VMware VIX error: " + e.getMessage());
+            e.printStackTrace(buildListener.getLogger());
             build.setResult(Result.FAILURE);
-            VMWareVIX.vixHostDisconnect(hostHandle);
             return null;
         }
-        return new EnvironmentImpl(hostHandle, vmHandle);
     }
 
     public Descriptor<BuildWrapper> getDescriptor() {

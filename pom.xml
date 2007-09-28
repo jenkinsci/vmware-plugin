@@ -12,4 +12,19 @@
     <packaging>hpi</packaging>
     <version>0.1-SNAPSHOT</version>
     <name>Hudson VMware plugin</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna</artifactId>
+            <version>20070509-hudson</version>
+        </dependency>
+    </dependencies>
+
+    <repositories>
+        <repository>
+            <id>jna-libs</id>
+            <url>file:${project.basedir}/lib</url>
+        </repository>
+    </repositories>
 </project>
