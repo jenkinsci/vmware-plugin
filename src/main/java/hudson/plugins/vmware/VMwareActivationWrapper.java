@@ -11,7 +11,6 @@ import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Result;
-import hudson.plugins.vmware.vix.VMWareVIX;
 import hudson.tasks.BuildWrapper;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -33,18 +32,29 @@ public class VMwareActivationWrapper extends BuildWrapper {
     public int portNumber;
     public boolean suspend;
     public boolean waitForTools;
+    public boolean revert;
 
     public Environment setUp(Build build, Launcher launcher, BuildListener buildListener) throws IOException, InterruptedException {
         class EnvironmentImpl extends Environment {
             private final VirtualMachine vm;
             private final Host host;
+            private final long powerTime;
 
-            public EnvironmentImpl(Host host, VirtualMachine vm) {
+            public EnvironmentImpl(Host host, VirtualMachine vm, long powerTime) {
                 this.vm = vm;
                 this.host = host;
+                this.powerTime = powerTime;
             }
 
             public boolean tearDown(Build build, BuildListener buildListener) throws IOException, InterruptedException {
+                while (System.currentTimeMillis() < powerTime + 10000L) {
+                    buildListener.getLogger().println("[VMware] Ensuring VM has completed BIOS boot sequence...");
+                    try {
+                        Thread.sleep(1000L);
+                    } catch (InterruptedException e) {
+                        // ignore
+                    }
+                }
                 if (suspend) {
                     buildListener.getLogger().println("[VMware] Suspending virtual machine.");
                     vm.suspend();
@@ -73,15 +83,20 @@ public class VMwareActivationWrapper extends BuildWrapper {
                 buildListener.getLogger().println("[VMware] Opening virtual machine: " + configFile);
                 VirtualMachine vm = host.open(configFile);
                 try {
+                    if (revert) {
+                        buildListener.getLogger().println("[VMware] Reverting virtual machine to current snapshot.");
+                        vm.revertToSnapshot();
+                    }
                     buildListener.getLogger().println("[VMware] Powering up virtual machine.");
                     vm.powerOn();
+                    long powerTime = System.currentTimeMillis();
                     if (waitForTools) {
                         buildListener.getLogger()
                                 .println("[VMware] Waiting for VMware Tools to start in virtual machine.");
                         vm.waitForToolsInGuest(0);
                     }
                     buildListener.getLogger().println("[VMware] Ready");
-                    return new EnvironmentImpl(host, vm);
+                    return new EnvironmentImpl(host, vm, powerTime);
                 } catch (VMwareRuntimeException e) {
                     vm.close();
                     throw e;

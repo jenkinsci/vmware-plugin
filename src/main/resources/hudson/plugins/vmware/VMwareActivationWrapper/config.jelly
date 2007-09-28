@@ -19,10 +19,13 @@
     <f:entry title="VMX Config File">
         <f:textbox name="vmware-activation.configFile" value="${instance.configFile}"/>
     </f:entry>
-    <f:entry title="Suspend (don't power off) when build completes">
-        <f:checkbox name="vmware-activation.configFile" value="${instance.configFile}"/>
+    <f:entry title="Revert to snapshot before startup">
+        <f:checkbox name="vmware-activation.revert" checked="${instance.revert}"/>
     </f:entry>
     <f:entry title="Wait for VMware Tools startup">
-        <f:checkbox name="vmware-activation.waitForTools" value="${instance.waitForTools}"/>
+        <f:checkbox name="vmware-activation.waitForTools" checked="${instance.waitForTools}"/>
+    </f:entry>
+    <f:entry title="Suspend (don't power off) when build completes">
+        <f:checkbox name="vmware-activation.suspend" checked="${instance.suspend}"/>
     </f:entry>
 </j:jelly>
