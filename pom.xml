@@ -10,7 +10,7 @@
 
     <artifactId>vmware</artifactId>
     <packaging>hpi</packaging>
-    <version>0.2</version>
+    <version>0.3-SNAPSHOT</version>
     <name>Hudson VMware plugin</name>
 
     <dependencies>
@@ -27,8 +27,4 @@
             <url>file:${project.basedir}/lib</url>
         </repository>
     </repositories>
-
-  <scm>
-    <tag>vmware-0_2</tag>
-  </scm>
 </project>
