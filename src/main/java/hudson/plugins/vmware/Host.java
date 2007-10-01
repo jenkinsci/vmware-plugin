@@ -34,6 +34,9 @@ public class Host {
                             hostName, hostPort, userName, password, 0, Vix.Handle.INVALID, null, null);
                     break;
             }
+            if (jobHandle == 0) {
+                throw new VMwareRuntimeException("Unknown error");
+            }
 
             LOGGER.fine("Waiting to connect...");
 
@@ -55,7 +58,7 @@ public class Host {
     }
 
     public VirtualMachine open(String configFileHostPath) {
-        if (handle == 0) {
+        if (handle == 0 || lib == null) {
             throw new VMwareRuntimeException("Not connected.");
         }
         return new VirtualMachine(lib, handle, configFileHostPath);

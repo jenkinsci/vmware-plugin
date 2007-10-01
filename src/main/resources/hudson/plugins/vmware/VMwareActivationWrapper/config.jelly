@@ -1,31 +1,41 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <f:entry title="VMware VIX Library Path">
-        <f:textbox name="vmware-activation.vixLibraryPath" value="${instance.vixLibraryPath}"/>
-    </f:entry>
-    <f:entry title="Host">
-        <f:textbox name="vmware-activation.hostName" value="${instance.hostName}"/>
-    </f:entry>
-    <f:entry title="Username">
-        <f:textbox name="vmware-activation.username" value="${instance.username}"/>
-    </f:entry>
-    <f:entry title="Password">
-        <input class="setting-input" name="vmware-activation.password"
-                 type="password" value="${instance.password}"/>
-    </f:entry>
-    <f:entry title="Port">
-        <f:textbox name="vmware-activation.portNumber" value="${instance.portNumber}"/>
-    </f:entry>
-    <f:entry title="VMX Config File">
-        <f:textbox name="vmware-activation.configFile" value="${instance.configFile}"/>
-    </f:entry>
-    <f:entry title="Revert to snapshot before startup">
-        <f:checkbox name="vmware-activation.revert" checked="${instance.revert}"/>
-    </f:entry>
-    <f:entry title="Wait for VMware Tools startup">
-        <f:checkbox name="vmware-activation.waitForTools" checked="${instance.waitForTools}"/>
-    </f:entry>
-    <f:entry title="Suspend (don't power off) when build completes">
-        <f:checkbox name="vmware-activation.suspend" checked="${instance.suspend}"/>
+    <f:entry title="Virtual Machines">
+        <f:repeatable var="machine" varStatus="loopStatus" items="${instance.machines}" minimum="1">
+            <table width="100%">
+                <f:entry title="VMware Host">
+                    <select class="setting-input" name="vmware-activation.machine.host">
+                        <j:forEach var="i" items="${descriptor.hostNames}">
+                            <f:option selected="${i==machine.host}" value="${i}">${i}</f:option>
+                        </j:forEach>
+                    </select>
+                </f:entry>
+                <f:entry title="VMX Config File">
+                    <f:textbox name="vmware-activation.machine.vmxFilePath" value="${machine.vmxFilePath}"/>
+                </f:entry>
+                <f:entry title="Pre-build">
+                    <select class="setting-input" name="vmware-activation.machine.preBuild">
+                        <j:forEach var="i" items="${descriptor.powerUpModes}">
+                            <f:option selected="${i.toString()==machine.preBuild}" value="${i.toString()}">${i.description}</f:option>
+                        </j:forEach>
+                    </select>
+                </f:entry>
+                <f:entry title="Post-build">
+                    <select class="setting-input" name="vmware-activation.machine.postBuild">
+                        <j:forEach var="i" items="${descriptor.powerDownModes}">
+                            <f:option selected="${i.toString()==machine.postBuild}" value="${i.toString()}">${i.description}</f:option>
+                        </j:forEach>
+                    </select>
+                </f:entry>
+                <f:advanced>
+                        <f:entry title="Startup timeout">
+                            <f:textbox name="vmware-activation.machine.waitTimeout" value="${machine.waitTimeout}"/>
+                        </f:entry>
+                </f:advanced>
+            </table>
+            <div align="right">
+                <f:repeatableDeleteButton/>
+            </div>
+        </f:repeatable>
     </f:entry>
 </j:jelly>

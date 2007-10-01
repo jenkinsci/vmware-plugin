@@ -30,6 +30,10 @@ public class VirtualMachine {
 
             jobHandle = lib.getInstance().VixVM_Open(hostHandle, configFileHostPath, null, null);
 
+            if (jobHandle == 0) {
+                throw new VMwareRuntimeException("Unknown error");
+            }
+
             LOGGER.fine("Waiting...");
 
             handle = lib.waitForJobAndGetJobResultHandle(jobHandle);
@@ -46,7 +50,7 @@ public class VirtualMachine {
     }
 
     public void powerOn() {
-        if (handle == 0) {
+        if (handle == 0 || lib == null) {
             throw new VMwareRuntimeException("Not connected.");
         }
 
@@ -55,6 +59,10 @@ public class VirtualMachine {
             LOGGER.info("Powering up virtual machine");
 
             jobHandle = lib.getInstance().VixVM_PowerOn(handle, Vix.VMPPowerOp.NORMAL, Vix.Handle.INVALID, null, null);
+
+            if (jobHandle == 0) {
+                throw new VMwareRuntimeException("Unknown error");
+            }
 
             LOGGER.fine("Waiting...");
 
@@ -67,7 +75,7 @@ public class VirtualMachine {
     }
 
     public void powerOff() {
-        if (handle == 0) {
+        if (handle == 0 || lib == null) {
             throw new VMwareRuntimeException("Not connected.");
         }
 
@@ -76,6 +84,10 @@ public class VirtualMachine {
             LOGGER.info("Powering off virtual machine");
 
             jobHandle = lib.getInstance().VixVM_PowerOff(handle, Vix.VMPPowerOp.NORMAL, null, null);
+
+            if (jobHandle == 0) {
+                throw new VMwareRuntimeException("Unknown error");
+            }
 
             LOGGER.fine("Waiting...");
 
@@ -88,7 +100,7 @@ public class VirtualMachine {
     }
 
     public void suspend() {
-        if (handle == 0) {
+        if (handle == 0 || lib == null) {
             throw new VMwareRuntimeException("Not connected.");
         }
 
@@ -97,6 +109,10 @@ public class VirtualMachine {
             LOGGER.info("Powering off virtual machine");
 
             jobHandle = lib.getInstance().VixVM_Suspend(handle, Vix.VMPPowerOp.NORMAL, null, null);
+
+            if (jobHandle == 0) {
+                throw new VMwareRuntimeException("Unknown error");
+            }
 
             LOGGER.fine("Waiting...");
 
@@ -109,7 +125,7 @@ public class VirtualMachine {
     }
 
     public void reset() {
-        if (handle == 0) {
+        if (handle == 0 || lib == null) {
             throw new VMwareRuntimeException("Not connected.");
         }
 
@@ -118,6 +134,10 @@ public class VirtualMachine {
             LOGGER.info("Powering off virtual machine");
 
             jobHandle = lib.getInstance().VixVM_Reset(handle, Vix.VMPPowerOp.NORMAL, null, null);
+
+            if (jobHandle == 0) {
+                throw new VMwareRuntimeException("Unknown error");
+            }
 
             LOGGER.fine("Waiting...");
 
@@ -130,7 +150,7 @@ public class VirtualMachine {
     }
 
     public void waitForToolsInGuest(int timeoutInSeconds) {
-        if (handle == 0) {
+        if (handle == 0 || lib == null) {
             throw new VMwareRuntimeException("Not connected.");
         }
 
@@ -139,6 +159,10 @@ public class VirtualMachine {
             LOGGER.info("Waiting for Tools to start in guest");
 
             jobHandle = lib.getInstance().VixVM_WaitForToolsInGuest(handle, timeoutInSeconds, null, null);
+
+            if (jobHandle == 0) {
+                throw new VMwareRuntimeException("Unknown error");
+            }
 
             LOGGER.fine("Waiting...");
 
@@ -151,7 +175,7 @@ public class VirtualMachine {
     }
 
     public void guestLogin(String username, String password) {
-        if (handle == 0) {
+        if (handle == 0 || lib == null) {
             throw new VMwareRuntimeException("Not connected.");
         }
 
@@ -160,6 +184,10 @@ public class VirtualMachine {
             LOGGER.info("Login...");
 
             jobHandle = lib.getInstance().VixVM_LoginInGuest(handle, username, password, 0, null, null);
+
+            if (jobHandle == 0) {
+                throw new VMwareRuntimeException("Unknown error");
+            }
 
             LOGGER.fine("Waiting...");
 
@@ -184,7 +212,7 @@ public class VirtualMachine {
     }
 
     public void guestLogout() {
-        if (handle == 0) {
+        if (handle == 0 || lib == null) {
             throw new VMwareRuntimeException("Not connected.");
         }
 
@@ -193,6 +221,10 @@ public class VirtualMachine {
             LOGGER.info("Logout...");
 
             jobHandle = lib.getInstance().VixVM_LogoutFromGuest(handle, null, null);
+
+            if (jobHandle == 0) {
+                throw new VMwareRuntimeException("Unknown error");
+            }
 
             LOGGER.fine("Waiting...");
 
@@ -205,7 +237,7 @@ public class VirtualMachine {
     }
 
     public int guestExec(String execGuestPath, String args, boolean wait, boolean activateWindow) {
-        if (handle == 0) {
+        if (handle == 0 || lib == null) {
             throw new VMwareRuntimeException("Not connected.");
         }
 
@@ -219,6 +251,10 @@ public class VirtualMachine {
                     Vix.Handle.INVALID, null, null);
 
             LOGGER.fine("Waiting...");
+
+            if (jobHandle == 0) {
+                throw new VMwareRuntimeException("Unknown error");
+            }
 
             lib.waitForJob(jobHandle);
 
@@ -245,7 +281,7 @@ public class VirtualMachine {
     }
 
     public void guestOpenUrl(String url) {
-        if (handle == 0) {
+        if (handle == 0 || lib == null) {
             throw new VMwareRuntimeException("Not connected.");
         }
 
@@ -255,6 +291,10 @@ public class VirtualMachine {
 
             jobHandle = lib.getInstance().VixVM_OpenUrlInGuest(handle, url, 0,
                     Vix.Handle.INVALID, null, null);
+
+            if (jobHandle == 0) {
+                throw new VMwareRuntimeException("Unknown error");
+            }
 
             LOGGER.fine("Waiting...");
 
@@ -267,7 +307,7 @@ public class VirtualMachine {
     }
 
     public void createSnapshot(String name, String description, boolean includeMemory) {
-        if (handle == 0) {
+        if (handle == 0 || lib == null) {
             throw new VMwareRuntimeException("Not connected.");
         }
 
@@ -277,6 +317,10 @@ public class VirtualMachine {
 
             jobHandle = lib.getInstance().VixVM_CreateSnapshot(handle, name, description, includeMemory ? Vix.Snapshot.INCLUDE_MEMORY : 0,
                     Vix.Handle.INVALID, null, null);
+
+            if (jobHandle == 0) {
+                throw new VMwareRuntimeException("Unknown error");
+            }
 
             LOGGER.fine("Waiting...");
 
@@ -289,7 +333,7 @@ public class VirtualMachine {
     }
 
     public void removeSnapshot() {
-        if (handle == 0) {
+        if (handle == 0 || lib == null) {
             throw new VMwareRuntimeException("Not connected.");
         }
 
@@ -302,6 +346,10 @@ public class VirtualMachine {
 
             jobHandle = lib.getInstance().VixVM_RemoveSnapshot(handle, snapshotHandle.getValue(), 0, null, null);
 
+            if (jobHandle == 0) {
+                throw new VMwareRuntimeException("Unknown error");
+            }
+
             LOGGER.fine("Waiting...");
 
             lib.waitForJob(jobHandle);
@@ -313,7 +361,7 @@ public class VirtualMachine {
     }
 
     public void revertToSnapshot() {
-        if (handle == 0) {
+        if (handle == 0 || lib == null) {
             throw new VMwareRuntimeException("Not connected.");
         }
 
@@ -326,6 +374,10 @@ public class VirtualMachine {
 
             jobHandle = lib.getInstance().VixVM_RevertToSnapshot(handle, snapshotHandle.getValue(), 0,
                     Vix.Handle.INVALID, null, null);
+
+            if (jobHandle == 0) {
+                throw new VMwareRuntimeException("Unknown error");
+            }
 
             LOGGER.fine("Waiting...");
 
