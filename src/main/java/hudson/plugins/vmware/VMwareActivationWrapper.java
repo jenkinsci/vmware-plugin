@@ -7,10 +7,7 @@
 package hudson.plugins.vmware;
 
 import hudson.Launcher;
-import hudson.model.Build;
-import hudson.model.BuildListener;
-import hudson.model.Descriptor;
-import hudson.model.Result;
+import hudson.model.*;
 import hudson.tasks.BuildWrapper;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -27,7 +24,7 @@ import java.util.logging.Logger;
  * @author Stephen Connolly
  * @since 26-Sep-2007 16:06:28
  */
-public class VMwareActivationWrapper extends BuildWrapper {
+public class VMwareActivationWrapper extends BuildWrapper implements ResourceActivity {
     public transient String vixLibraryPath;
     public transient String hostName;
     public transient String username;
@@ -269,6 +266,18 @@ public class VMwareActivationWrapper extends BuildWrapper {
     }
 
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
+
+    public ResourceList getResourceList() {
+        ResourceList resources = new ResourceList();
+        for (VMActivationConfig machine : machines) {
+            resources.w(new Resource(machine.getHost() + "/" + machine.getVmxFilePath()));
+        }
+        return resources;
+    }
+
+    public String getDisplayName() {
+        return DESCRIPTOR.getDisplayName();
+    }
 
     public static final class DescriptorImpl extends Descriptor<BuildWrapper> {
         private List<VMwareHostConfig> hosts;

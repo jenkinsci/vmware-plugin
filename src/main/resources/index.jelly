@@ -1,5 +1,5 @@
 <div>
-  This (Windows only) plugin integrates <a href="http://www.vmware.com/">VMware</a> virtual machine activation to Hudson.
-  <br/>
-  <b>Warning: currently unstable and will bring down the JVM after a few builds</b>
+    This (Windows only) plugin integrates
+    <a href="http://www.vmware.com/">VMware</a>
+    virtual machine activation to Hudson.
 </div>
