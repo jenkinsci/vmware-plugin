@@ -1,0 +1,41 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <f:entry title="Virtual Machines">
+        <f:repeatable var="machine" varStatus="loopStatus" items="${instance.machines}" minimum="1">
+            <table width="100%">
+                <f:entry title="VMware Host">
+                    <select class="setting-input" name="vmware-activation.machine.host">
+                        <j:forEach var="i" items="${descriptor.hostNames}">
+                            <f:option selected="${i==machine.host}" value="${i}">${i}</f:option>
+                        </j:forEach>
+                    </select>
+                </f:entry>
+                <f:entry title="VMX Config File">
+                    <f:textbox name="vmware-activation.machine.vmxFilePath" value="${machine.vmxFilePath}"/>
+                </f:entry>
+                <f:entry title="Pre-build">
+                    <select class="setting-input" name="vmware-activation.machine.preBuild">
+                        <j:forEach var="i" items="${descriptor.powerUpModes}">
+                            <f:option selected="${i.toString()==machine.preBuild}" value="${i.toString()}">${i.description}</f:option>
+                        </j:forEach>
+                    </select>
+                </f:entry>
+                <f:entry title="Post-build">
+                    <select class="setting-input" name="vmware-activation.machine.postBuild">
+                        <j:forEach var="i" items="${descriptor.powerDownModes}">
+                            <f:option selected="${i.toString()==machine.postBuild}" value="${i.toString()}">${i.description}</f:option>
+                        </j:forEach>
+                    </select>
+                </f:entry>
+                <f:advanced>
+                        <f:entry title="Startup timeout">
+                            <f:textbox name="vmware-activation.machine.waitTimeout" value="${machine.waitTimeout}"/>
+                        </f:entry>
+                </f:advanced>
+            </table>
+            <div align="right">
+                <f:repeatableDeleteButton/>
+            </div>
+        </f:repeatable>
+    </f:entry>
+</j:jelly>
