@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -216,6 +217,14 @@ public class VMwareActivationWrapper extends BuildWrapper implements ResourceAct
                     vm.powerDown(buildListener);
                 }
                 return true;
+            }
+
+            @Override
+            public void buildEnvVars(Map<String, String> map) {
+                super.buildEnvVars(map);
+                for (String key : PluginImpl.getVMs()) {
+                    map.put(key, PluginImpl.getVMIP(key));
+                }
             }
         }
         List<VMC> vms = new ArrayList<VMC>();

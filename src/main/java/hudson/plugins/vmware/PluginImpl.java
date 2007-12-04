@@ -1,18 +1,20 @@
 package hudson.plugins.vmware;
 
 import hudson.Plugin;
-import hudson.util.FormFieldValidator;
-import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrappers;
-import org.apache.commons.beanutils.ConvertUtils;
-import org.apache.commons.beanutils.Converter;
+import hudson.util.FormFieldValidator;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import javax.servlet.ServletException;
-import java.net.URL;
 import java.io.File;
 import java.io.IOException;
+import java.io.Writer;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
 
 /**
@@ -22,6 +24,7 @@ import java.util.logging.Logger;
  * @plugin
  */
 public class PluginImpl extends Plugin {
+    private static final ConcurrentMap<String, String> vmIPAddresses = new ConcurrentHashMap<String, String>();
     private final String URL_PREFIX = "file:/";
 
     public void start() throws Exception {
@@ -51,6 +54,67 @@ public class PluginImpl extends Plugin {
                 ok();
             }
         }.process();
+    }
+
+    public Map<String, String> getVmIPAddresses() {
+        return Collections.unmodifiableMap(vmIPAddresses);
+    }
+
+    public void doSet(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        Writer w = rsp.getCompressedWriter(req);
+        String key = req.getParameter("name");
+        String ip1 = req.getParameter("override");
+        String ip2 = req.getRemoteAddr();
+        String ip = ip1 == null ? ip2 : ip1;
+        if (key == null) {
+            w.append("Must provide the 'name' parameter.\n");
+            w.append("If the request is being forwarded through a proxy, the IP address to use can be set using the 'override' parameter.\n");
+        } else {
+            w.append(key + "=" + ip + "\n");
+            setVMIP(key, ip);
+        }
+        w.append("Request originated from " + ip2 + ".");
+        w.close();
+    }
+
+    public void doUnset(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        Writer w = rsp.getCompressedWriter(req);
+        String key = req.getParameter("name");
+        if (key == null) {
+            w.append("Must provide the 'name' parameter.\n");
+        } else {
+            w.append(key + " cleared.\n");
+            clearVMIP(key);
+        }
+        w.append("Request originated from " + req.getRemoteAddr() + ".");
+        w.close();
+    }
+
+    public void doQuery(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        Writer w = rsp.getCompressedWriter(req);
+        String key = req.getParameter("name");
+        if (key == null) {
+            w.append("Must provide the 'name' parameter.\n");
+        } else {
+            w.append(getVMIP(key));
+        }
+        w.close();
+    }
+
+    public static void setVMIP(String key, String ip) {
+        vmIPAddresses.put(key, ip);
+    }
+
+    public static void clearVMIP(String key) {
+        vmIPAddresses.remove(key);
+    }
+
+    public static String getVMIP(String key) {
+        return vmIPAddresses.get(key);
+    }
+
+    public static Set<String> getVMs() {
+        return Collections.unmodifiableSet(vmIPAddresses.keySet());
     }
 
 
