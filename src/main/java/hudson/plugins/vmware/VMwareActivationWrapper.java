@@ -17,6 +17,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 /**
@@ -101,19 +102,51 @@ public class VMwareActivationWrapper extends BuildWrapper implements ResourceAct
                 this.cfg = cfg;
             }
 
-            public void powerUp(BuildListener buildListener) {
-                buildListener.getLogger()
+            public void prepareFeedback(BuildListener listener) {
+                if (cfg.isWaitForFeedback()) {
+                    listener.getLogger().println("[VMware] Unsetting " + cfg.getFeedbackKey() + " for "
+                            + cfg.getVmxFilePath() + " on " + cfg.getHost());
+                    PluginImpl.clearVMIP(cfg.getFeedbackKey());
+                    PluginImpl.watchVMIP(cfg.getFeedbackKey());
+                }
+            }
+
+            public boolean awaitFeedback(BuildListener listener) {
+                if (cfg.isWaitForFeedback()) {
+                    listener.getLogger().println("[VMware] Waiting on " + cfg.getFeedbackKey() + " from "
+                            + cfg.getVmxFilePath() + " on " + cfg.getHost());
+                    try {
+                        final boolean result = PluginImpl.awaitVMIP(cfg.getFeedbackKey(),
+                                cfg.getFeedbackTimeout(), TimeUnit.SECONDS);
+                        if (result) {
+                            listener.getLogger().println("[VMware] " + cfg.getFeedbackKey() + "=" + PluginImpl
+                                    .getVMIP(cfg.getFeedbackKey()));
+                        } else {
+                            listener.getLogger().println("[VMware] Timed out!");
+                        }
+                        return result;
+                    } catch (InterruptedException e) {
+                        listener.getLogger().println("[VMware] Interrupted...");
+                        e.printStackTrace(listener.getLogger());
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            public void powerUp(BuildListener listener) {
+                listener.getLogger()
                         .println("[VMware] Pre-build for " + cfg.getVmxFilePath() + " on " + cfg.getHost() + "...");
                 switch (cfg.getPowerUpMode()) {
                     case NOTHING:
                         break;
                     case REVERT:
                     case REVERT_WAIT:
-                        buildListener.getLogger().println("[VMware] Reverting virtual machine to current snapshot.");
+                        listener.getLogger().println("[VMware] Reverting virtual machine to current snapshot.");
                         vm.revertToSnapshot();
                     case NORMAL:
                     case NORMAL_WAIT:
-                        buildListener.getLogger().println("[VMware] Powering up virtual machine.");
+                        listener.getLogger().println("[VMware] Powering up virtual machine.");
                         vm.powerOn();
                         break;
                     default:
@@ -122,7 +155,7 @@ public class VMwareActivationWrapper extends BuildWrapper implements ResourceAct
                 switch (cfg.getPowerUpMode()) {
                     case NORMAL_WAIT:
                     case REVERT_WAIT:
-                        buildListener.getLogger()
+                        listener.getLogger()
                                 .println("[VMware] Waiting for VMware Tools to start in virtual machine.");
                         vm.waitForToolsInGuest(cfg.waitTimeout);
                         break;
@@ -130,7 +163,7 @@ public class VMwareActivationWrapper extends BuildWrapper implements ResourceAct
                         break;
                 }
                 powerTime = System.currentTimeMillis();
-                buildListener.getLogger().println("[VMware] Pre-build for " + cfg.getVmxFilePath() + " on " + cfg
+                listener.getLogger().println("[VMware] Pre-build for " + cfg.getVmxFilePath() + " on " + cfg
                         .getHost() + " completed.");
             }
 
@@ -247,6 +280,7 @@ public class VMwareActivationWrapper extends BuildWrapper implements ResourceAct
                     VirtualMachine vm = host.open(machine.getVmxFilePath());
                     try {
                         final VMC vmc = new VMC(vm, host, machine);
+                        vmc.prepareFeedback(buildListener);
                         vmc.powerUp(buildListener);
                         vms.add(vmc);
                     } catch (VMwareRuntimeException e) {
@@ -266,6 +300,15 @@ public class VMwareActivationWrapper extends BuildWrapper implements ResourceAct
                 vmc.powerDown(buildListener);
             }
             return null;
+        }
+        for (VMC vmc : vms) {
+            if (!vmc.awaitFeedback(buildListener)) {
+                build.setResult(Result.FAILURE);
+                for (VMC vmc2 : vms) {
+                    vmc2.powerDown(buildListener);
+                }
+                return null;
+            }
         }
         return new EnvironmentImpl(vms);
     }
@@ -601,6 +644,9 @@ public class VMwareActivationWrapper extends BuildWrapper implements ResourceAct
         private VMWrapperPowerUpMode powerUpMode;
         private VMWrapperPowerDownMode powerDownMode;
         private int waitTimeout;
+        private boolean waitForFeedback;
+        private String feedbackKey;
+        private int feedbackTimeout;
 
         public VMActivationConfig() {
         }
@@ -675,6 +721,30 @@ public class VMwareActivationWrapper extends BuildWrapper implements ResourceAct
             setHostConfig(DESCRIPTOR.getHost(host = name));
         }
 
+
+        public boolean isWaitForFeedback() {
+            return waitForFeedback && feedbackKey != null && feedbackKey.trim().length() > 0;
+        }
+
+        public void setWaitForFeedback(boolean waitForFeedback) {
+            this.waitForFeedback = waitForFeedback;
+        }
+
+        public String getFeedbackKey() {
+            return feedbackKey;
+        }
+
+        public void setFeedbackKey(String feedbackKey) {
+            this.feedbackKey = feedbackKey;
+        }
+
+        public int getFeedbackTimeout() {
+            return feedbackTimeout < 0 ? 300 : feedbackTimeout;
+        }
+
+        public void setFeedbackTimeout(int feedbackTimeout) {
+            this.feedbackTimeout = feedbackTimeout;
+        }
     }
 
     private static final Logger LOGGER = Logger.getLogger(VMwareActivationWrapper.class.getName());

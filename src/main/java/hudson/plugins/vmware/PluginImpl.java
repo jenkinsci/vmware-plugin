@@ -15,6 +15,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 /**
@@ -25,6 +27,7 @@ import java.util.logging.Logger;
  */
 public class PluginImpl extends Plugin {
     private static final ConcurrentMap<String, String> vmIPAddresses = new ConcurrentHashMap<String, String>();
+    private static final ConcurrentMap<String, CountDownLatch> nameLatches = new ConcurrentHashMap<String, CountDownLatch>();
     private final String URL_PREFIX = "file:/";
 
     public void start() throws Exception {
@@ -56,10 +59,22 @@ public class PluginImpl extends Plugin {
         }.process();
     }
 
+    /**
+     * Gets the current name-value pairs of virtual machine names and IP addresses.
+     *
+     * @return The name-value pairs.
+     */
     public Map<String, String> getVmIPAddresses() {
         return Collections.unmodifiableMap(vmIPAddresses);
     }
 
+    /**
+     * Stapler handler for setting a VM IP.
+     *
+     * @param req The request.
+     * @param rsp The response.
+     * @throws IOException If there are problems with IO.
+     */
     public void doSet(StaplerRequest req, StaplerResponse rsp) throws IOException {
         Writer w = rsp.getCompressedWriter(req);
         String key = req.getParameter("name");
@@ -77,6 +92,13 @@ public class PluginImpl extends Plugin {
         w.close();
     }
 
+    /**
+     * Stapler handler for unsetting a VM IP.
+     *
+     * @param req The request.
+     * @param rsp The response.
+     * @throws IOException If there are problems with IO.
+     */
     public void doUnset(StaplerRequest req, StaplerResponse rsp) throws IOException {
         Writer w = rsp.getCompressedWriter(req);
         String key = req.getParameter("name");
@@ -90,6 +112,13 @@ public class PluginImpl extends Plugin {
         w.close();
     }
 
+    /**
+     * Stapler handler for querying a VM IP.
+     *
+     * @param req The request.
+     * @param rsp The response.
+     * @throws IOException If there are problems with IO.
+     */
     public void doQuery(StaplerRequest req, StaplerResponse rsp) throws IOException {
         Writer w = rsp.getCompressedWriter(req);
         String key = req.getParameter("name");
@@ -101,22 +130,90 @@ public class PluginImpl extends Plugin {
         w.close();
     }
 
-    public static void setVMIP(String key, String ip) {
-        vmIPAddresses.put(key, ip);
+    /**
+     * Waits until the specified key has been set. Will return immediately if the key is already set.
+     *
+     * @param key The key to look for.
+     * @throws InterruptedException If interrupted.
+     */
+    public static void awaitVMIP(String key) throws InterruptedException {
+        if (vmIPAddresses.containsKey(key)) {
+            return;
+        }
+        watchVMIP(key);
+        final CountDownLatch latch = nameLatches.get(key);
+        assert latch != null;
+        latch.await();
     }
 
+    /**
+     * Waits at most <code>timeout</code> for the specified key to be set.  Will return immediately if the key is
+     * already set.
+     *
+     * @param key     The key to look for.
+     * @param timeout The timeout.
+     * @param unit    The units of the timeout.
+     * @return <code>true</code> if the key has been set.
+     * @throws InterruptedException If interrupted.
+     */
+    public static boolean awaitVMIP(String key, long timeout, TimeUnit unit) throws InterruptedException {
+        if (vmIPAddresses.containsKey(key)) {
+            return true;
+        }
+        watchVMIP(key);
+        final CountDownLatch latch = nameLatches.get(key);
+        assert latch != null;
+        return latch.await(timeout, unit);
+    }
+
+    public static void watchVMIP(String key) {
+        if (!nameLatches.containsKey(key)) {
+            nameLatches.putIfAbsent(key, new CountDownLatch(1));
+        }
+    }
+
+    /**
+     * Sets the key, releasing any threads that were waiting for it to be set.
+     *
+     * @param key The name.
+     * @param ip  The value.
+     */
+    public static void setVMIP(String key, String ip) {
+        vmIPAddresses.put(key, ip);
+        final CountDownLatch latch = nameLatches.get(key);
+        if (latch != null) {
+            latch.countDown();
+            nameLatches.remove(key, latch);
+        }
+    }
+
+    /**
+     * Clears the key.
+     *
+     * @param key The name.
+     */
     public static void clearVMIP(String key) {
         vmIPAddresses.remove(key);
     }
 
+    /**
+     * Returns the current value of the key.
+     *
+     * @param key The key.
+     * @return The current value or <code>null</code> if empty.
+     */
     public static String getVMIP(String key) {
         return vmIPAddresses.get(key);
     }
 
+    /**
+     * Gets a set of all the current names.
+     *
+     * @return all the current names.
+     */
     public static Set<String> getVMs() {
         return Collections.unmodifiableSet(vmIPAddresses.keySet());
     }
-
 
     private static final java.util.logging.Logger LOGGER = Logger.getLogger(PluginImpl.class.getName());
 }
