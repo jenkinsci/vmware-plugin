@@ -18,7 +18,7 @@
         <dependency>
             <groupId>net.java.dev.jna</groupId>
             <artifactId>jna</artifactId>
-            <version>20071105-hudson</version>
+            <version>3.0.1-hudson</version>
         </dependency>
     </dependencies>
 

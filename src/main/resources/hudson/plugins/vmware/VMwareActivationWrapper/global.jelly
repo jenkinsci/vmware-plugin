@@ -13,7 +13,7 @@
                     <f:entry title="path to VMware VIX libraries" description="${status}">
                         <input class="setting-input validated" name="vmware.host.vixLibraryPath"
                                type="text" value="${h.ifThenElse(host==null,descriptor.findDefaultVixLibraryPath(),host.vixLibraryPath)}"
-                               checkUrl="'${rootURL}/../plugin/vmware/vixLibraryCheck?value='+escape(this.value)"/>
+                               checkUrl="'${rootURL}/plugin/vmware/vixLibraryCheck?value='+escape(this.value)"/>
                     </f:entry>
 
                     <f:entry title="hostname">
