@@ -3,3 +3,5 @@ vmware.iws
 vmware.iml
 work
 target
+.project
+.settings
