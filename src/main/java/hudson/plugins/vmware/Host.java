@@ -6,9 +6,9 @@
 
 package hudson.plugins.vmware;
 
-import com.sun.jna.ptr.IntByReference;
 import hudson.plugins.vmware.vix.Vix;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 /**
@@ -21,6 +21,7 @@ public class Host {
     private static final Logger LOGGER = Logger.getLogger(Host.class.getName());
     private int handle = 0;
     private final VMware lib;
+    private final AtomicInteger usageCount = new AtomicInteger(0);
 
     Host(VMware library, HostType hostType, String hostName, int hostPort, String userName, String password) {
         this.lib = library;
@@ -53,14 +54,18 @@ public class Host {
     }
 
     public void disconnect() {
-        lib.getInstance().VixHost_Disconnect(handle);
-        handle = 0;
+        if (usageCount.decrementAndGet() <= 0) {
+            lib.getInstance().VixHost_Disconnect(handle);
+            handle = 0;
+        }
     }
 
     public VirtualMachine open(String configFileHostPath) {
         if (handle == 0 || lib == null) {
             throw new VMwareRuntimeException("Not connected.");
         }
-        return new VirtualMachine(lib, handle, configFileHostPath);
+        final VirtualMachine machine = new VirtualMachine(lib, handle, configFileHostPath);
+        usageCount.getAndIncrement();
+        return machine;
     }
 }
