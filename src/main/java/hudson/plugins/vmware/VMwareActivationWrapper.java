@@ -88,7 +88,8 @@ public class VMwareActivationWrapper extends BuildWrapper implements ResourceAct
         this.machines = machines;
     }
 
-    public Environment setUp(Build build, Launcher launcher, BuildListener buildListener) throws IOException, InterruptedException {
+    @Override
+    public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener buildListener) throws IOException, InterruptedException {
         final class VMC {
             private final VirtualMachine vm;
             private final Host host;
