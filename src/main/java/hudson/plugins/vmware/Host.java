@@ -1,9 +1,3 @@
-/*
- * Copyright (c) 2007 Avaya Inc.
- *
- * All rights reserved.
- */
-
 package hudson.plugins.vmware;
 
 import hudson.plugins.vmware.vix.Vix;
