@@ -24,7 +24,15 @@ public class VMwareLauncher extends ComputerLauncher {
     }
 
     public void launch(SlaveComputer slaveComputer, StreamTaskListener streamTaskListener) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        streamTaskListener.getLogger().println("[VMware] Opening virtual machine...");
+        VMware instance = VMware.getSingleton(virtualMachine.getHost().getVixLibraryPath());
+        Host host = instance.connect(virtualMachine.getHost());
+        VirtualMachine vm = host.open(virtualMachine.getVmxFilePath());
+        streamTaskListener.getLogger().println("[VMware] Powering up virtual machine...");
+        vm.powerOn();
+        streamTaskListener.getLogger().println("[VMware] Launching slave process...");
+
+        throw new UnsupportedOperationException("This is not implemented yet");
     }
 
     public VMwareVMConfig getVirtualMachine() {
