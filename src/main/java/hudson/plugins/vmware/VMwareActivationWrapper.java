@@ -395,24 +395,6 @@ public class VMwareActivationWrapper extends BuildWrapper implements ResourceAct
 
     }
 
-    public enum VMWrapperPowerDownMode implements Serializable {
-        NORMAL("Power off"),
-        SUSPEND("Suspend"),
-        CREATE_POWER_OFF("Take snapshot before power off"),
-        CREATE_NORMAL("Take snapshot after power off"),
-        CREATE_SUSPEND("Take snapshot after suspend"),
-        NOTHING("Do nothing"),;
-        private String description;
-
-        VMWrapperPowerDownMode(String description) {
-            this.description = description;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-    }
-
     public static final class VMActivationConfig implements Serializable {
         private String vmxFilePath;
         private String host;
