@@ -43,10 +43,6 @@ public class Host {
         }
     }
 
-    public enum HostType {
-        VMWARE_SERVER;
-    }
-
     public void disconnect() {
         if (usageCount.decrementAndGet() <= 0) {
             lib.getInstance().VixHost_Disconnect(handle);
@@ -62,4 +58,5 @@ public class Host {
         usageCount.getAndIncrement();
         return machine;
     }
+
 }

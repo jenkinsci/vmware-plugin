@@ -1,6 +1,7 @@
 package hudson.plugins.vmware;
 
 import hudson.Plugin;
+import hudson.slaves.ComputerLauncher;
 import hudson.tasks.BuildWrappers;
 import hudson.util.FormFieldValidator;
 import org.kohsuke.stapler.StaplerRequest;
@@ -13,11 +14,13 @@ import java.io.Writer;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+import java.lang.ref.WeakReference;
 
 /**
  * Entry point of vmware plugin.
@@ -32,6 +35,27 @@ public class PluginImpl extends Plugin {
 
     public void start() throws Exception {
         BuildWrappers.WRAPPERS.add(VMwareActivationWrapper.DESCRIPTOR);
+        ComputerLauncher.LIST.add(VMwareLauncher.DESCRIPTOR);
+    }
+
+    public static String findDefaultVixLibraryPath() {
+        if (System.getProperty("os.name").toLowerCase().startsWith("windows")) {
+            if (new File("C:\\Program Files\\VMware\\VMware VIX\\server-1\\32bit\\vix.dll").exists()) {
+                return "C:\\Program Files\\VMware\\VMware VIX\\server-1\\32bit";
+            } else if (new File("C:\\Program Files\\VMware\\VMware VIX\\vix.dll").exists()) {
+                return "C:\\Program Files\\VMware\\VMware VIX";
+            } else {
+                return "";
+            }
+        } else {
+            if (new File("/usr/lib/vmware-vix/lib/server-1/32bit/libvix.so").exists()) {
+                return "/usr/lib/vmware-vix/lib/server-1/32bit";
+            } else if (new File("/usr/lib/vmware-vix/lib/libvix.so").exists()) {
+                return "/usr/lib/vmware-vix/lib";
+            } else {
+                return "";
+            }
+        }
     }
 
     /**

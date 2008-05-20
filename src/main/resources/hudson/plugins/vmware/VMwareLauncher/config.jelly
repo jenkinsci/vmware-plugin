@@ -1,0 +1,13 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <f:entry title="VMware Host">
+        <select class="setting-input" name="launcher.virtualMachine">
+            <j:forEach var="i" items="${descriptor.hosts}">
+                <f:option selected="${i==instance.virtualMachine.host}" value="${instance.virtualMachine.host}">${i}</f:option>
+            </j:forEach>
+        </select>
+    </f:entry>
+    <f:entry title="VMX Config File">
+        <f:textbox name="launcher.virtualMachine.vmxFilePath" value="${instance.virtualMachine.vmxFilePath}"/>
+    </f:entry>
+</j:jelly>
