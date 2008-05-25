@@ -31,20 +31,13 @@
         <dependency>
             <groupId>net.java.dev.jna</groupId>
             <artifactId>jna</artifactId>
-            <version>3.0.1-hudson</version>
+            <version>3.0.3</version>
         </dependency>
     </dependencies>
 
-    <repositories>
-        <repository>
-            <id>jna-libs</id>
-            <url>file:${project.basedir}/lib</url>
-        </repository>
-    </repositories>
-
-  <scm>
-    <connection>scm:svn:https://svn.dev.java.net/svn/hudson/tags/vmware-0.8</connection>
-    <developerConnection>scm:svn:https://svn.dev.java.net/svn/hudson/tags/vmware-0.8</developerConnection>
-    <url>https://hudson.dev.java.net/source/browse/hudson/hudson/plugins/vmware/tags/vmware-0.8</url>
-  </scm>
+    <scm>
+        <connection>scm:svn:https://svn.dev.java.net/svn/hudson/tags/vmware-0.8</connection>
+        <developerConnection>scm:svn:https://svn.dev.java.net/svn/hudson/tags/vmware-0.8</developerConnection>
+        <url>https://hudson.dev.java.net/source/browse/hudson/hudson/plugins/vmware/tags/vmware-0.8</url>
+    </scm>
 </project>
