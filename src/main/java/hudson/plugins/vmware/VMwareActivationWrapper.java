@@ -162,11 +162,11 @@ public class VMwareActivationWrapper extends BuildWrapper implements ResourceAct
             }
 
             public void powerDown(BuildListener buildListener) {
-                buildListener.getLogger().println("[VMware] Post-build for " + cfg.getVmxFilePath() + " on " + cfg
-                        .getHost() + "...");
+                buildListener.getLogger().println(Messages.VMwareActivationWrapper_LogPostBuildActionsStarting(cfg.getVmxFilePath(),cfg
+                        .getHost()));
 
                 while (System.currentTimeMillis() < powerTime + 10000L) {
-                    buildListener.getLogger().println("[VMware] Ensuring VM has completed BIOS boot sequence...");
+                    buildListener.getLogger().println(Messages.VMwareActivationWrapper_LogWaitingForBIOSBoot());
                     try {
                         Thread.sleep(1000L);
                     } catch (InterruptedException e) {
@@ -176,7 +176,7 @@ public class VMwareActivationWrapper extends BuildWrapper implements ResourceAct
 
                 switch (cfg.getPowerDownMode()) {
                     case CREATE_POWER_OFF:
-                        buildListener.getLogger().println("[VMware] Taking snapshot.");
+                        buildListener.getLogger().println(Messages.VMwareActivationWrapper_LogTakingSnapshot());
                         vm.createSnapshot("", "", true);
                         break;
                     case NOTHING:
@@ -191,13 +191,13 @@ public class VMwareActivationWrapper extends BuildWrapper implements ResourceAct
                 switch (cfg.getPowerDownMode()) {
                     case SUSPEND:
                     case CREATE_SUSPEND:
-                        buildListener.getLogger().println("[VMware] Suspending virtual machine.");
+                        buildListener.getLogger().println(Messages.VMwareActivationWrapper_LogSuspending());
                         vm.suspend();
                         break;
                     case NORMAL:
                     case CREATE_POWER_OFF:
                     case CREATE_NORMAL:
-                        buildListener.getLogger().println("[VMware] Powering off virtual machine.");
+                        buildListener.getLogger().println(Messages.VMwareActivationWrapper_LogPoweringOff());
                         vm.powerOff();
                         break;
                     case NOTHING:
@@ -207,11 +207,11 @@ public class VMwareActivationWrapper extends BuildWrapper implements ResourceAct
 
                 switch (cfg.getPowerDownMode()) {
                     case CREATE_SUSPEND:
-                        buildListener.getLogger().println("[VMware] Taking snapshot.");
+                        buildListener.getLogger().println(Messages.VMwareActivationWrapper_LogTakingSnapshot());
                         vm.createSnapshot("", "", true);
                         break;
                     case CREATE_NORMAL:
-                        buildListener.getLogger().println("[VMware] Taking snapshot.");
+                        buildListener.getLogger().println(Messages.VMwareActivationWrapper_LogTakingSnapshot());
                         vm.createSnapshot("", "", false);
                         break;
                     case NOTHING:
@@ -223,12 +223,12 @@ public class VMwareActivationWrapper extends BuildWrapper implements ResourceAct
                 }
 
                 vm.close();
-                buildListener.getLogger().println("[VMware] Disconnecting");
+                buildListener.getLogger().println(Messages.VMwareActivationWrapper_LogDisconnecting());
                 host.disconnect();
-                buildListener.getLogger().println("[VMware] Done");
+                buildListener.getLogger().println(Messages.VMwareActivationWrapper_LogDone());
 
-                buildListener.getLogger().println("[VMware] Post-build for " + cfg.getVmxFilePath() + " on " + cfg
-                        .getHost() + " completed.");
+                buildListener.getLogger().println(Messages.VMwareActivationWrapper_LogPostBuildActionsComplete(cfg.getVmxFilePath(),cfg
+                        .getHost()));
             }
 
         }
@@ -265,11 +265,10 @@ public class VMwareActivationWrapper extends BuildWrapper implements ResourceAct
                     library = VMware.getSingleton(lastLibrary);
                 }
                 buildListener.getLogger()
-                        .println("[VMware] Connecting to VMware Server host " + config.getHostName() +
-                                ":" + config.getPortNumber() + " as user " + config.getUsername());
+                        .println(Messages.VMwareActivationWrapper_LogOpeningVixConnection(config.getHostName(), config.getPortNumber(), config.getUsername()));
                 Host host = library.connect(config);
                 try {
-                    buildListener.getLogger().println("[VMware] Opening virtual machine: " + machine.getVmxFilePath());
+                    buildListener.getLogger().println(Messages.VMwareActivationWrapper_LogOpeningVirtualMachine(machine.getVmxFilePath()));
                     VirtualMachine vm = host.open(machine.getVmxFilePath());
                     try {
                         final VMC vmc = new VMC(vm, host, machine);
@@ -286,7 +285,7 @@ public class VMwareActivationWrapper extends BuildWrapper implements ResourceAct
                 }
             }
         } catch (VMwareRuntimeException e) {
-            buildListener.getLogger().println("[VMware] VMware VIX error: " + e.getMessage());
+            buildListener.getLogger().println(Messages.VMwareActivationWrapper_LogVixError(e.getMessage()));
             e.printStackTrace(buildListener.getLogger());
             build.setResult(Result.FAILURE);
             for (VMC vmc : vms) {
@@ -333,7 +332,7 @@ public class VMwareActivationWrapper extends BuildWrapper implements ResourceAct
         }
 
         public String getDisplayName() {
-            return "VMware Server VIX Virtual Machine Activation";
+            return Messages.VMwareActivationWrapper_DescriptorImpl_DisplayName();
         }
 
         public VMwareActivationWrapper newInstance(StaplerRequest req) throws FormException {
