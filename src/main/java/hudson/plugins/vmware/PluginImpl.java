@@ -67,14 +67,14 @@ public class PluginImpl extends Plugin {
             public void check() throws IOException, ServletException {
                 File f = getFileParameter("value");
                 if (!f.isDirectory()) {
-                    error(f + " is not a directory");
+                    error(Messages.PluginImpl_NotADirectory(f));
                     return;
                 }
 
                 File winDll = new File(f, "vix.dll");
                 File linuxSO = new File(f, "libvix.so");
                 if (!winDll.exists() && !linuxSO.exists()) {
-                    error(f + " doesn't look like a VIX library directory");
+                    error(Messages.PluginImpl_NotAVixLibraryDirectory(f));
                     return;
                 }
 
@@ -106,13 +106,13 @@ public class PluginImpl extends Plugin {
         String ip2 = req.getRemoteAddr();
         String ip = ip1 == null ? ip2 : ip1;
         if (key == null) {
-            w.append("Must provide the 'name' parameter.\n");
-            w.append("If the request is being forwarded through a proxy, the IP address to use can be set using the 'override' parameter.\n");
+            w.append(Messages.PluginImpl_MissingParameterName()+"\n");
+            w.append(Messages.PluginImpl_HowToOverrideIP()+"\n");
         } else {
-            w.append(key + "=" + ip + "\n");
+            w.append(Messages.PluginImpl_IPAddressSet(key,ip) + "\n");
             setVMIP(key, ip);
         }
-        w.append("Request originated from " + ip2 + ".");
+        w.append(Messages.PluginImpl_RequestOriginatedFrom(ip2));
         w.close();
     }
 
@@ -127,12 +127,12 @@ public class PluginImpl extends Plugin {
         Writer w = rsp.getCompressedWriter(req);
         String key = req.getParameter("name");
         if (key == null) {
-            w.append("Must provide the 'name' parameter.\n");
+            w.append(Messages.PluginImpl_MissingParameterName()+"\n");
         } else {
-            w.append(key + " cleared.\n");
+            w.append(Messages.PluginImpl_IPAddressCleared(key)+"\n");
             clearVMIP(key);
         }
-        w.append("Request originated from " + req.getRemoteAddr() + ".");
+        w.append(Messages.PluginImpl_RequestOriginatedFrom(req.getRemoteAddr()));
         w.close();
     }
 
@@ -147,7 +147,7 @@ public class PluginImpl extends Plugin {
         Writer w = rsp.getCompressedWriter(req);
         String key = req.getParameter("name");
         if (key == null) {
-            w.append("Must provide the 'name' parameter.\n");
+            w.append(Messages.PluginImpl_MissingParameterName()+"\n");
         } else {
             w.append(getVMIP(key));
         }
