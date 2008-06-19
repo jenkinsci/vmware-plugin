@@ -5,4 +5,14 @@ package hudson.plugins.vmware;
  * @author Stephen Connolly
  */
 public interface VirtualComputer {
+    VirtualComputerHost getHost();
+    State getState();
+
+    public static enum State {
+        POWERED_OFF,
+        POWERING_UP,
+        POWERING_DOWN,
+        RUNNING,
+        SUSPENDED        
+    }
 }
