@@ -39,12 +39,7 @@ public class PluginImpl extends Plugin {
      * @return The plugin instance.
      */
     public static PluginImpl getInstance() {
-        for (PluginWrapper wrapper : Hudson.getInstance().getPluginManager().getPlugins()) {
-            if (wrapper.getPlugin() instanceof PluginImpl) {
-                return (PluginImpl) wrapper.getPlugin();
-            }
-        }
-        return null;
+        return Hudson.getInstance().getPlugin(PluginImpl.class);
     }
 
     /**
