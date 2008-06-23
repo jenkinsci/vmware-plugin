@@ -3,6 +3,7 @@ package hudson.plugins.vmware;
 import com.sun.jna.Native;
 import com.sun.jna.ptr.IntByReference;
 import hudson.plugins.vmware.vix.Vix;
+import hudson.model.Hudson;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -55,15 +56,7 @@ public class VMware {
 // --------------------------- CONSTRUCTORS ---------------------------
 
     private VMware(String pathToLib) {
-        final String oldProp = System.getProperty("jna.library.path");
-        try {
-            System.setProperty("jna.library.path", pathToLib);
-            instance = (Vix) Native.loadLibrary("vix", Vix.class);
-        } finally {
-            if (oldProp != null) {
-                System.setProperty("jna.library.path", oldProp);
-            }
-        }
+        instance = PluginImpl.getVixInstance(pathToLib);
     }
 
 // --------------------- GETTER / SETTER METHODS ---------------------

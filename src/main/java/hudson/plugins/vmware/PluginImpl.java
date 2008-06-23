@@ -1,6 +1,9 @@
 package hudson.plugins.vmware;
 
 import hudson.Plugin;
+import hudson.PluginWrapper;
+import hudson.plugins.vmware.vix.Vix;
+import hudson.model.Hudson;
 import hudson.slaves.ComputerLauncher;
 import hudson.tasks.BuildWrappers;
 import hudson.util.FormFieldValidator;
@@ -11,16 +14,16 @@ import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
-import java.util.HashMap;
+import java.io.Closeable;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-import java.lang.ref.WeakReference;
+import java.util.logging.Level;
+
+import com.sun.jna.Native;
 
 /**
  * Entry point of vmware plugin.
@@ -29,6 +32,108 @@ import java.lang.ref.WeakReference;
  * @plugin
  */
 public class PluginImpl extends Plugin {
+
+    /**
+     * Returns the plugin instance.
+     *
+     * @return The plugin instance.
+     */
+    public static PluginImpl getInstance() {
+        for (PluginWrapper wrapper : Hudson.getInstance().getPluginManager().getPlugins()) {
+            if (wrapper.getPlugin() instanceof PluginImpl) {
+                return (PluginImpl) wrapper.getPlugin();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * There are problems if we load the same library more than once, also libraries cannot be unloaded, so once they
+     * are in they are in for good.
+     *
+     * Guarded by {@link #VIX_INSTANCES_LOCK}.
+     */
+    private static final Map<String, Vix> VIX_INSTANCES = new HashMap<String, Vix>();
+
+    /**
+     * Lock for accessing {@link #VIX_INSTANCES}
+     */
+    private static final Object VIX_INSTANCES_LOCK = new Object();
+
+    /**
+     * Gets a {@link Vix} instance for a given path.
+     * @param libraryPath The path to vix.
+     * @return The vix instance or {@code null} if it could not be loaded.
+     */
+    public static Vix getVixInstance(String libraryPath) {
+        synchronized (VIX_INSTANCES_LOCK) {
+            File path = new File(libraryPath);
+            try {
+                libraryPath = path.getCanonicalPath();
+            } catch (IOException e) {
+                LOGGER.log(Level.INFO, "Could not get canonical path, reverting to absolute", e);
+                libraryPath = path.getAbsolutePath();
+            }
+            Vix instance = VIX_INSTANCES.get(libraryPath);
+            if (instance == null) {
+                LOGGER.log(Level.INFO, "Attempting to load VMware libraries at path {0}", libraryPath);
+                try {
+                    final String oldProp = System.getProperty("jna.library.path");
+                    try {
+                        System.setProperty("jna.library.path", libraryPath);
+                        instance = (Vix) Native.synchronizedLibrary((Vix) Native.loadLibrary("vix", Vix.class));
+                        VIX_INSTANCES.put(libraryPath, instance);
+                        LOGGER.log(Level.INFO, "VMware libraries at path {0} loaded", libraryPath);
+                    } finally {
+                        if (oldProp != null) {
+                            System.setProperty("jna.library.path", oldProp);
+                        }
+                    }
+                } catch (Throwable t) {
+                    LOGGER.log(Level.SEVERE, "VMware libraries at path " + libraryPath + " failed to load", t);
+                }
+
+            }
+            return instance;
+        }
+    }
+
+    private static class VixReference {
+        private final Closeable closeable;
+        private int refCount;
+
+        public VixReference(Closeable closeable) {
+            closeable.getClass();
+            this.closeable = closeable;
+            this.refCount = 1;
+        }
+
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            VixReference that = (VixReference) o;
+
+            // use object identity
+            return closeable == that.closeable;
+        }
+
+        public int hashCode() {
+            return System.identityHashCode(closeable);
+        }
+
+        public synchronized void inc() {
+            refCount++;
+        }
+
+        public synchronized void dec() throws IOException {
+            refCount--;
+            if (refCount == 0) {
+                closeable.close();
+            }
+        }
+    }
+
     private static final ConcurrentMap<String, String> vmIPAddresses = new ConcurrentHashMap<String, String>();
     private static final ConcurrentMap<String, CountDownLatch> nameLatches = new ConcurrentHashMap<String, CountDownLatch>();
     private final String URL_PREFIX = "file:/";
@@ -106,10 +211,10 @@ public class PluginImpl extends Plugin {
         String ip2 = req.getRemoteAddr();
         String ip = ip1 == null ? ip2 : ip1;
         if (key == null) {
-            w.append(Messages.PluginImpl_MissingParameterName()+"\n");
-            w.append(Messages.PluginImpl_HowToOverrideIP()+"\n");
+            w.append(Messages.PluginImpl_MissingParameterName() + "\n");
+            w.append(Messages.PluginImpl_HowToOverrideIP() + "\n");
         } else {
-            w.append(Messages.PluginImpl_IPAddressSet(key,ip) + "\n");
+            w.append(Messages.PluginImpl_IPAddressSet(key, ip) + "\n");
             setVMIP(key, ip);
         }
         w.append(Messages.PluginImpl_RequestOriginatedFrom(ip2));
@@ -127,9 +232,9 @@ public class PluginImpl extends Plugin {
         Writer w = rsp.getCompressedWriter(req);
         String key = req.getParameter("name");
         if (key == null) {
-            w.append(Messages.PluginImpl_MissingParameterName()+"\n");
+            w.append(Messages.PluginImpl_MissingParameterName() + "\n");
         } else {
-            w.append(Messages.PluginImpl_IPAddressCleared(key)+"\n");
+            w.append(Messages.PluginImpl_IPAddressCleared(key) + "\n");
             clearVMIP(key);
         }
         w.append(Messages.PluginImpl_RequestOriginatedFrom(req.getRemoteAddr()));
@@ -147,7 +252,7 @@ public class PluginImpl extends Plugin {
         Writer w = rsp.getCompressedWriter(req);
         String key = req.getParameter("name");
         if (key == null) {
-            w.append(Messages.PluginImpl_MissingParameterName()+"\n");
+            w.append(Messages.PluginImpl_MissingParameterName() + "\n");
         } else {
             w.append(getVMIP(key));
         }
