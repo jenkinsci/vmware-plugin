@@ -547,11 +547,11 @@ public interface Vix extends Library {
     int VixVM_GetRootSnapshot(int vmHandle, int index, IntByReference snapshotHandle);
 
     int VixVM_GetCurrentSnapshot(int vmHandle,
-                                      IntByReference snapshotHandle);
+                                 IntByReference snapshotHandle);
 
     int VixVM_GetNamedSnapshot(int vmHandle,
-                                    String name,
-                                    IntByReference snapshotHandle);
+                               String name,
+                               IntByReference snapshotHandle);
 
     public static final class Snapshot {
         /**
@@ -561,29 +561,29 @@ public interface Vix extends Library {
         /**
          * Create option
          */
-        public static final int INCLUDE_MEMORY=0x0002;
+        public static final int INCLUDE_MEMORY = 0x0002;
     }
 
     int VixVM_RemoveSnapshot(int vmHandle,
-                                   int snapshotHandle,
-                                   int options,
-                                   VixEventProc callbackProc,
-                                   Pointer clientData);
+                             int snapshotHandle,
+                             int options,
+                             VixEventProc callbackProc,
+                             Pointer clientData);
 
     int VixVM_RevertToSnapshot(int vmHandle,
-                                     int snapshotHandle,
-                                     int options,
-                                     int propertyListHandle,
-                                     VixEventProc callbackProc,
-                                     Pointer clientData);
+                               int snapshotHandle,
+                               int options,
+                               int propertyListHandle,
+                               VixEventProc callbackProc,
+                               Pointer clientData);
 
     int VixVM_CreateSnapshot(int vmHandle,
-                                   String name,
-                                   String description,
-                                   int options,
-                                   int propertyListHandle,
-                                   VixEventProc callbackProc,
-                                   Pointer clientData);
+                             String name,
+                             String description,
+                             int options,
+                             int propertyListHandle,
+                             VixEventProc callbackProc,
+                             Pointer clientData);
 
     /*
     *-----------------------------------------------------------------------------

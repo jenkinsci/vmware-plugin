@@ -4,6 +4,7 @@ import hudson.slaves.SlaveComputer;
 import hudson.slaves.ComputerLauncher;
 import hudson.util.StreamTaskListener;
 import hudson.model.Descriptor;
+import hudson.plugins.vmware.vix.VixHostConfig;
 
 import java.util.List;
 
@@ -53,7 +54,7 @@ public class VMwareLauncher extends ComputerLauncher {
         public String getDisplayName() {
             return "Launch a VMware virtual machine based slave";
         }
-        public List<VMwareHostConfig> getHosts() {
+        public List<VixHostConfig> getHosts() {
             return VMwareActivationWrapper.DESCRIPTOR.getHosts();
         }
 

@@ -4,6 +4,7 @@ import hudson.plugins.vmware.vix.Vix;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
+import java.util.Set;
 
 /**
  * Created by IntelliJ IDEA.
@@ -57,6 +58,12 @@ public class Host {
         final VirtualMachine machine = new VirtualMachine(lib, handle, configFileHostPath);
         usageCount.getAndIncrement();
         return machine;
+    }
+
+    public Set<String> getVirtualMachines() {
+        if (handle == 0 || lib == null) {
+            throw new VMwareRuntimeException("Not connected.");
+        }
     }
 
 }

@@ -67,34 +67,4 @@ public class VMware {
 
 // -------------------------- OTHER METHODS --------------------------
 
-    public Host connect(HostType hostType, String hostName, int hostPort, String userName, String password) {
-        return new Host(this, hostType, hostName, hostPort, userName, password);
-    }
-
-    public Host connect(VMwareHostConfig config) {
-        return new Host(this,
-                config.getHostType(),
-                config.getHostName(),
-                config.getPortNumber(),
-                config.getUsername(),
-                config.getPassword());
-    }
-
-    void waitForJob(int jobHandle) {
-        checkError(instance.VixJob_Wait(jobHandle, Vix.Property.NONE));
-    }
-
-    int waitForJobAndGetJobResultHandle(int jobHandle) {
-        IntByReference result = new IntByReference();
-        checkError(instance.VixJob_Wait(jobHandle, Vix.Property.JOB_RESULT_HANDLE, result, Vix.Property.NONE));
-        return result.getValue();
-    }
-
-    void checkError(int err) {
-        if (err != Vix.Error.OK) {
-            final String errorMessage = instance.Vix_GetErrorText(err, null);
-            LOGGER.warning(errorMessage);
-            throw new VMwareRuntimeException(errorMessage);
-        }
-    }
 }

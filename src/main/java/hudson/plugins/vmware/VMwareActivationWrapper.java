@@ -1,6 +1,7 @@
 package hudson.plugins.vmware;
 
 import hudson.Launcher;
+import hudson.plugins.vmware.vix.VixHostConfig;
 import hudson.model.*;
 import hudson.tasks.BuildWrapper;
 import org.kohsuke.stapler.StaplerRequest;
@@ -34,12 +35,12 @@ public class VMwareActivationWrapper extends BuildWrapper implements ResourceAct
     private void importOldConfig() {
         assert machines == null;
         machines = new ArrayList<VMActivationConfig>();
-        VMwareHostConfig hostConfig = null;
+        VixHostConfig hostConfig = null;
         if (vixLibraryPath != null) {
             // pull legacy config
-            hostConfig = new VMwareHostConfig(vixLibraryPath, hostName, portNumber, HostType.VMWARE_SERVER, username, password);
+            hostConfig = new VixHostConfig(vixLibraryPath, hostName, portNumber, HostType.VMWARE_SERVER, username, password);
             boolean found = false;
-            for (VMwareHostConfig h : DESCRIPTOR.getHosts()) {
+            for (VixHostConfig h : DESCRIPTOR.getHosts()) {
                 if (h.equals(hostConfig)) {
                     found = true;
                     hostConfig = h;
@@ -259,7 +260,7 @@ public class VMwareActivationWrapper extends BuildWrapper implements ResourceAct
             VMware library = null;
             String lastLibrary = null;
             for (VMActivationConfig machine : machines) {
-                final VMwareHostConfig config = machine.getHostConfig();
+                final VixHostConfig config = machine.getHostConfig();
                 if (lastLibrary == null || !lastLibrary.equals(config.getVixLibraryPath())) {
                     lastLibrary = config.getVixLibraryPath();
                     library = VMware.getSingleton(lastLibrary);
@@ -324,7 +325,7 @@ public class VMwareActivationWrapper extends BuildWrapper implements ResourceAct
     }
 
     public static final class DescriptorImpl extends Descriptor<BuildWrapper> {
-        private List<VMwareHostConfig> hosts;
+        private List<VixHostConfig> hosts;
 
         DescriptorImpl() {
             super(VMwareActivationWrapper.class);
@@ -344,26 +345,26 @@ public class VMwareActivationWrapper extends BuildWrapper implements ResourceAct
 
         public boolean configure(StaplerRequest req) throws FormException {
             req.bindParameters(this, "vmware.");
-            hosts = req.bindParametersToList(VMwareHostConfig.class, "vmware.host.");
+            hosts = req.bindParametersToList(VixHostConfig.class, "vmware.host.");
             save();
             return super.configure(req);
         }
 
-        public List<VMwareHostConfig> getHosts() {
+        public List<VixHostConfig> getHosts() {
             if (hosts == null) {
-                hosts = new ArrayList<VMwareHostConfig>();
+                hosts = new ArrayList<VixHostConfig>();
                 // provide default if we have none
-                hosts.add(new VMwareHostConfig(true));
+                hosts.add(new VixHostConfig(true));
             }
             return hosts;
         }
 
-        public void setHosts(List<VMwareHostConfig> hosts) {
+        public void setHosts(List<VixHostConfig> hosts) {
             this.hosts = hosts;
         }
 
-        public VMwareHostConfig getHost(String name) {
-            for (VMwareHostConfig host : hosts) {
+        public VixHostConfig getHost(String name) {
+            for (VixHostConfig host : hosts) {
                 if (name.equals(host.getName())) {
                     return host;
                 }
@@ -379,7 +380,7 @@ public class VMwareActivationWrapper extends BuildWrapper implements ResourceAct
             return result;
         }
 
-        public void addHost(VMwareHostConfig hostConfig) {
+        public void addHost(VixHostConfig hostConfig) {
             hosts.add(hostConfig);
             save();
         }
@@ -397,7 +398,7 @@ public class VMwareActivationWrapper extends BuildWrapper implements ResourceAct
     public static final class VMActivationConfig implements Serializable {
         private String vmxFilePath;
         private String host;
-        private transient VMwareHostConfig hostConfig;
+        private transient VixHostConfig hostConfig;
         private VMWrapperPowerUpMode powerUpMode;
         private VMWrapperPowerDownMode powerDownMode;
         private int waitTimeout;
@@ -424,14 +425,14 @@ public class VMwareActivationWrapper extends BuildWrapper implements ResourceAct
             this.vmxFilePath = vmxFilePath;
         }
 
-        public VMwareHostConfig getHostConfig() {
+        public VixHostConfig getHostConfig() {
             if (hostConfig == null && host != null && !"".equals(host)) {
                 setHostConfig(DESCRIPTOR.getHost(host));
             }
             return hostConfig;
         }
 
-        public void setHostConfig(VMwareHostConfig hostConfig) {
+        public void setHostConfig(VixHostConfig hostConfig) {
             this.hostConfig = hostConfig;
         }
 

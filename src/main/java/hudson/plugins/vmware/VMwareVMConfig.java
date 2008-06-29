@@ -1,6 +1,7 @@
 package hudson.plugins.vmware;
 
 import org.kohsuke.stapler.DataBoundConstructor;
+import hudson.plugins.vmware.vix.VixHostConfig;
 
 /**
  * TODO javadoc.
@@ -9,11 +10,11 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * @since 20-May-2008 22:03:12
  */
 public class VMwareVMConfig {
-    private final VMwareHostConfig host;
+    private final VixHostConfig host;
     private final String vmxFilePath;
 
     @DataBoundConstructor
-    public VMwareVMConfig(String vmxFilePath, VMwareHostConfig host) {
+    public VMwareVMConfig(String vmxFilePath, VixHostConfig host) {
         this.vmxFilePath = vmxFilePath;
         this.host = host;
     }
@@ -23,7 +24,7 @@ public class VMwareVMConfig {
      *
      * @return Value for property 'host'.
      */
-    public VMwareHostConfig getHost() {
+    public VixHostConfig getHost() {
         return host;
     }
 

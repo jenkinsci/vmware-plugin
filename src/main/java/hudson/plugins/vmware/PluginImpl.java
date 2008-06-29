@@ -32,7 +32,7 @@ import com.sun.jna.Native;
  * @plugin
  */
 public class PluginImpl extends Plugin {
-
+             
     /**
      * Returns the plugin instance.
      *
@@ -40,57 +40,6 @@ public class PluginImpl extends Plugin {
      */
     public static PluginImpl getInstance() {
         return Hudson.getInstance().getPlugin(PluginImpl.class);
-    }
-
-    /**
-     * There are problems if we load the same library more than once, also libraries cannot be unloaded, so once they
-     * are in they are in for good.
-     *
-     * Guarded by {@link #VIX_INSTANCES_LOCK}.
-     */
-    private static final Map<String, Vix> VIX_INSTANCES = new HashMap<String, Vix>();
-
-    /**
-     * Lock for accessing {@link #VIX_INSTANCES}
-     */
-    private static final Object VIX_INSTANCES_LOCK = new Object();
-
-    /**
-     * Gets a {@link Vix} instance for a given path.
-     * @param libraryPath The path to vix.
-     * @return The vix instance or {@code null} if it could not be loaded.
-     */
-    public static Vix getVixInstance(String libraryPath) {
-        synchronized (VIX_INSTANCES_LOCK) {
-            File path = new File(libraryPath);
-            try {
-                libraryPath = path.getCanonicalPath();
-            } catch (IOException e) {
-                LOGGER.log(Level.INFO, "Could not get canonical path, reverting to absolute", e);
-                libraryPath = path.getAbsolutePath();
-            }
-            Vix instance = VIX_INSTANCES.get(libraryPath);
-            if (instance == null) {
-                LOGGER.log(Level.INFO, "Attempting to load VMware libraries at path {0}", libraryPath);
-                try {
-                    final String oldProp = System.getProperty("jna.library.path");
-                    try {
-                        System.setProperty("jna.library.path", libraryPath);
-                        instance = (Vix) Native.synchronizedLibrary((Vix) Native.loadLibrary("vix", Vix.class));
-                        VIX_INSTANCES.put(libraryPath, instance);
-                        LOGGER.log(Level.INFO, "VMware libraries at path {0} loaded", libraryPath);
-                    } finally {
-                        if (oldProp != null) {
-                            System.setProperty("jna.library.path", oldProp);
-                        }
-                    }
-                } catch (Throwable t) {
-                    LOGGER.log(Level.SEVERE, "VMware libraries at path " + libraryPath + " failed to load", t);
-                }
-
-            }
-            return instance;
-        }
     }
 
     private static class VixReference {

@@ -19,7 +19,7 @@ public interface VirtualComputer {
         POWERING_UP,
         POWERING_DOWN,
         RUNNING,
-        SUSPENDED        
+        SUSPENDED
     }
 
     public static enum Command {
@@ -28,10 +28,8 @@ public interface VirtualComputer {
         SUSPEND,
         RESUME,
         TAKE_SNAPSHOT,
-        REVERT_TO_SNAPSHOT,        
+        REVERT_TO_SNAPSHOT,
         ;
-
-
     }
 
     public static interface Operation extends Future<Boolean> {

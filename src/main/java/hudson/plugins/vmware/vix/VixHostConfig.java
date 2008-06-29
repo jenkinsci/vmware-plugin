@@ -1,8 +1,11 @@
-package hudson.plugins.vmware;
+package hudson.plugins.vmware.vix;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.Serializable;
+
+import hudson.plugins.vmware.HostType;
+import hudson.plugins.vmware.PluginImpl;
 
 /**
  * TODO javadoc.
@@ -10,7 +13,7 @@ import java.io.Serializable;
 * @author Stephen Connolly
 * @since 20-May-2008 22:04:10
 */
-public final class VMwareHostConfig implements Serializable {
+public final class VixHostConfig implements Serializable {
     public String name;
     public String vixLibraryPath;
     public String hostName;
@@ -20,7 +23,7 @@ public final class VMwareHostConfig implements Serializable {
     public String password;
 
     @DataBoundConstructor
-    public VMwareHostConfig(String name, String vixLibraryPath, String hostName, int portNumber, HostType hostType, String username, String password) {
+    public VixHostConfig(String name, String vixLibraryPath, String hostName, int portNumber, HostType hostType, String username, String password) {
         this.name = name;
         this.vixLibraryPath = vixLibraryPath;
         this.hostName = hostName;
@@ -30,10 +33,10 @@ public final class VMwareHostConfig implements Serializable {
         this.password = password;
     }
 
-    public VMwareHostConfig() {
+    public VixHostConfig() {
     }
 
-    public VMwareHostConfig(boolean dummy) {
+    public VixHostConfig(boolean dummy) {
         name = "(default)";
         hostType = HostType.VMWARE_SERVER;
         portNumber = 902;
@@ -51,7 +54,7 @@ public final class VMwareHostConfig implements Serializable {
         this.name = name;
     }
 
-    public VMwareHostConfig(String vixLibraryPath, String hostName, int portNumber, HostType hostType, String username, String password) {
+    public VixHostConfig(String vixLibraryPath, String hostName, int portNumber, HostType hostType, String username, String password) {
         this.vixLibraryPath = vixLibraryPath;
         this.hostName = hostName;
         this.portNumber = portNumber;
@@ -177,7 +180,7 @@ public final class VMwareHostConfig implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        VMwareHostConfig that = (VMwareHostConfig) o;
+        VixHostConfig that = (VixHostConfig) o;
 
         if (portNumber != that.portNumber) return false;
         if (hostName != null ? !hostName.equals(that.hostName) : that.hostName != null) return false;
