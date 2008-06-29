@@ -1,19 +1,20 @@
 package hudson.plugins.vmware.vix;
 
+import hudson.plugins.vmware.HostType;
+import hudson.plugins.vmware.PluginImpl;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.Serializable;
 
-import hudson.plugins.vmware.HostType;
-import hudson.plugins.vmware.PluginImpl;
-
 /**
  * TODO javadoc.
-*
-* @author Stephen Connolly
-* @since 20-May-2008 22:04:10
-*/
+ *
+ * @author Stephen Connolly
+ * @since 20-May-2008 22:04:10
+ */
 public final class VixHostConfig implements Serializable {
+// ------------------------------ FIELDS ------------------------------
+
     public String name;
     public String vixLibraryPath;
     public String hostName;
@@ -22,17 +23,11 @@ public final class VixHostConfig implements Serializable {
     public String username;
     public String password;
 
-    @DataBoundConstructor
-    public VixHostConfig(String name, String vixLibraryPath, String hostName, int portNumber, HostType hostType, String username, String password) {
-        this.name = name;
-        this.vixLibraryPath = vixLibraryPath;
-        this.hostName = hostName;
-        this.portNumber = portNumber;
-        this.hostType = hostType;
-        this.username = username;
-        this.password = password;
-    }
+// --------------------------- CONSTRUCTORS ---------------------------
 
+    /**
+     * Constructs a new VixHostConfig.
+     */
     public VixHostConfig() {
     }
 
@@ -46,14 +41,6 @@ public final class VixHostConfig implements Serializable {
         password = "";
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public VixHostConfig(String vixLibraryPath, String hostName, int portNumber, HostType hostType, String username, String password) {
         this.vixLibraryPath = vixLibraryPath;
         this.hostName = hostName;
@@ -63,25 +50,18 @@ public final class VixHostConfig implements Serializable {
         this.password = password;
     }
 
-    /**
-     * Getter for property 'vixLibraryPath'.
-     *
-     * @return Value for property 'vixLibraryPath'.
-     */
-    public String getVixLibraryPath() {
-        return vixLibraryPath == null || "".equals(vixLibraryPath) ?
-                PluginImpl.findDefaultVixLibraryPath() :
-                vixLibraryPath;
+    @DataBoundConstructor
+    public VixHostConfig(String name, String vixLibraryPath, String hostName, int portNumber, HostType hostType, String username, String password) {
+        this.name = name;
+        this.vixLibraryPath = vixLibraryPath;
+        this.hostName = hostName;
+        this.portNumber = portNumber;
+        this.hostType = hostType;
+        this.username = username;
+        this.password = password;
     }
 
-    /**
-     * Setter for property 'vixLibraryPath'.
-     *
-     * @param vixLibraryPath Value to set for property 'vixLibraryPath'.
-     */
-    public void setVixLibraryPath(String vixLibraryPath) {
-        this.vixLibraryPath = vixLibraryPath;
-    }
+// --------------------- GETTER / SETTER METHODS ---------------------
 
     /**
      * Getter for property 'hostName'.
@@ -102,6 +82,42 @@ public final class VixHostConfig implements Serializable {
     }
 
     /**
+     * Getter for property 'name'.
+     *
+     * @return Value for property 'name'.
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Setter for property 'name'.
+     *
+     * @param name Value to set for property 'name'.
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    /**
+     * Getter for property 'password'.
+     *
+     * @return Value for property 'password'.
+     */
+    public String getPassword() {
+        return password;
+    }
+
+    /**
+     * Setter for property 'password'.
+     *
+     * @param password Value to set for property 'password'.
+     */
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    /**
      * Getter for property 'portNumber'.
      *
      * @return Value for property 'portNumber'.
@@ -111,33 +127,6 @@ public final class VixHostConfig implements Serializable {
             portNumber = 902;
         }
         return portNumber;
-    }
-
-    /**
-     * Setter for property 'portNumber'.
-     *
-     * @param portNumber Value to set for property 'portNumber'.
-     */
-    public void setPortNumber(int portNumber) {
-        this.portNumber = portNumber == 0 ? 902 : portNumber;
-    }
-
-    /**
-     * Getter for property 'hostType'.
-     *
-     * @return Value for property 'hostType'.
-     */
-    public HostType getHostType() {
-        return hostType == null ? HostType.VMWARE_SERVER : hostType;
-    }
-
-    /**
-     * Setter for property 'hostType'.
-     *
-     * @param hostType Value to set for property 'hostType'.
-     */
-    public void setHostType(HostType hostType) {
-        this.hostType = hostType;
     }
 
     /**
@@ -159,23 +148,28 @@ public final class VixHostConfig implements Serializable {
     }
 
     /**
-     * Getter for property 'password'.
+     * Setter for property 'hostType'.
      *
-     * @return Value for property 'password'.
+     * @param hostType Value to set for property 'hostType'.
      */
-    public String getPassword() {
-        return password;
+    public void setHostType(HostType hostType) {
+        this.hostType = hostType;
     }
 
     /**
-     * Setter for property 'password'.
+     * Setter for property 'vixLibraryPath'.
      *
-     * @param password Value to set for property 'password'.
+     * @param vixLibraryPath Value to set for property 'vixLibraryPath'.
      */
-    public void setPassword(String password) {
-        this.password = password;
+    public void setVixLibraryPath(String vixLibraryPath) {
+        this.vixLibraryPath = vixLibraryPath;
     }
 
+// ------------------------ CANONICAL METHODS ------------------------
+
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -192,6 +186,9 @@ public final class VixHostConfig implements Serializable {
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public int hashCode() {
         int result;
         result = (vixLibraryPath != null ? vixLibraryPath.hashCode() : 0);
@@ -200,5 +197,51 @@ public final class VixHostConfig implements Serializable {
         result = 31 * result + (hostType != null ? hostType.hashCode() : 0);
         result = 31 * result + (username != null ? username.hashCode() : 0);
         return result;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public String toString() {
+        return "VixHostConfig{" +
+                "name='" + name + '\'' +
+                ", vixLibraryPath='" + vixLibraryPath + '\'' +
+                ", hostName='" + hostName + '\'' +
+                ", portNumber=" + portNumber +
+                ", hostType=" + hostType +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                '}';
+    }
+
+// -------------------------- OTHER METHODS --------------------------
+
+    /**
+     * Getter for property 'hostType'.
+     *
+     * @return Value for property 'hostType'.
+     */
+    public HostType getHostType() {
+        return hostType == null ? HostType.VMWARE_SERVER : hostType;
+    }
+
+    /**
+     * Getter for property 'vixLibraryPath'.
+     *
+     * @return Value for property 'vixLibraryPath'.
+     */
+    public String getVixLibraryPath() {
+        return vixLibraryPath == null || "".equals(vixLibraryPath) ?
+                PluginImpl.findDefaultVixLibraryPath() :
+                vixLibraryPath;
+    }
+
+    /**
+     * Setter for property 'portNumber'.
+     *
+     * @param portNumber Value to set for property 'portNumber'.
+     */
+    public void setPortNumber(int portNumber) {
+        this.portNumber = portNumber == 0 ? 902 : portNumber;
     }
 }

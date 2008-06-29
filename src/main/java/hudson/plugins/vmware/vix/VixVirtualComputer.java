@@ -1,12 +1,10 @@
 package hudson.plugins.vmware.vix;
 
+import com.sun.jna.ptr.IntByReference;
 import hudson.plugins.vmware.Host;
-import hudson.plugins.vmware.VMware;
 import hudson.plugins.vmware.VMwareRuntimeException;
 
 import java.util.logging.Logger;
-
-import com.sun.jna.ptr.IntByReference;
 
 /**
  * TODO javadoc.
@@ -15,6 +13,8 @@ import com.sun.jna.ptr.IntByReference;
  * @since 29-Jun-2008 21:57:34
  */
 public class VixVirtualComputer extends VixObject {
+    private VixVirtualComputerConfig config;
+
     public static VixVirtualComputer newInstance(VixHost fileHostPath, String configFileHostPath) {
         return null;  //To change body of created methods use File | Settings | File Templates.
     }
@@ -22,13 +22,18 @@ public class VixVirtualComputer extends VixObject {
     private static final Logger LOGGER = Logger.getLogger(Host.class.getName());
     private int handle = 0;
 
-    VixVirtualComputer(Vix library, int hostHandle, String configFileHostPath) {
+    VixVirtualComputer(Vix library, int hostHandle, VixVirtualComputerConfig config) {
         super(library);
+        this.config = config;
+        open(hostHandle);
+    }
+
+    private void open(int hostHandle) {
         int jobHandle = 0;
         try {
-            LOGGER.info("Trying to open virtual machine " + configFileHostPath);
+            LOGGER.info("Trying to open virtual machine " + config.getVmxFilePath());
 
-            jobHandle = getLibrary().VixVM_Open(hostHandle, configFileHostPath, null, null);
+            jobHandle = getLibrary().VixVM_Open(hostHandle, config.getVmxFilePath(), null, null);
 
             if (jobHandle == 0) {
                 throw new VMwareRuntimeException("Unknown error");

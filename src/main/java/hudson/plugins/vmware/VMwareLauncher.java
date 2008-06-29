@@ -1,14 +1,14 @@
 package hudson.plugins.vmware;
 
-import hudson.slaves.SlaveComputer;
-import hudson.slaves.ComputerLauncher;
-import hudson.util.StreamTaskListener;
 import hudson.model.Descriptor;
 import hudson.plugins.vmware.vix.VixHostConfig;
+import hudson.plugins.vmware.vix.VixVirtualComputerConfig;
+import hudson.slaves.ComputerLauncher;
+import hudson.slaves.SlaveComputer;
+import hudson.util.StreamTaskListener;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.List;
-
-import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * TODO javadoc.
@@ -17,10 +17,10 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * @since 20-May-2008 21:48:04
  */
 public class VMwareLauncher extends ComputerLauncher {
-    private final VMwareVMConfig virtualMachine;
+    private final VixVirtualComputerConfig virtualMachine;
 
     @DataBoundConstructor
-    public VMwareLauncher(VMwareVMConfig virtualMachine) {
+    public VMwareLauncher(VixVirtualComputerConfig virtualMachine) {
         this.virtualMachine = virtualMachine;
     }
 
@@ -36,7 +36,7 @@ public class VMwareLauncher extends ComputerLauncher {
         throw new UnsupportedOperationException("This is not implemented yet");
     }
 
-    public VMwareVMConfig getVirtualMachine() {
+    public VixVirtualComputerConfig getVirtualMachine() {
         return virtualMachine;
     }
 
@@ -54,6 +54,7 @@ public class VMwareLauncher extends ComputerLauncher {
         public String getDisplayName() {
             return "Launch a VMware virtual machine based slave";
         }
+
         public List<VixHostConfig> getHosts() {
             return VMwareActivationWrapper.DESCRIPTOR.getHosts();
         }
