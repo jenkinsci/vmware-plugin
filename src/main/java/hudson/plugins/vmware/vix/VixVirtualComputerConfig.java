@@ -8,7 +8,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * @author Stephen Connolly
  * @since 20-May-2008 22:03:12
  */
-public class VixVirtualComputerConfig {
+public final class VixVirtualComputerConfig {
 // ------------------------------ FIELDS ------------------------------
 
     private final VixHostConfig host;
