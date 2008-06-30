@@ -354,7 +354,7 @@ public class VMwareActivationWrapper extends BuildWrapper implements ResourceAct
             if (hosts == null) {
                 hosts = new ArrayList<VixHostConfig>();
                 // provide default if we have none
-                hosts.add(new VixHostConfig(true));
+                hosts.add(new VixHostConfig());
             }
             return hosts;
         }

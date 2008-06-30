@@ -35,6 +35,16 @@ public class VixLibraryManager {
     private static final Object VIX_INSTANCES_LOCK = new Object();
 
     /**
+     * There are problems if we have two handles for the same host.
+     */
+    private static final Map<VixHostConfig, VixHost> HOST_INSTANCES = new HashMap<VixHostConfig, VixHost>();
+
+    /**
+     * Lock for accessing {@link #VIX_INSTANCES}.
+     */
+    private static final Object HOST_INSTANCES_LOCK = new Object();
+
+    /**
      * Gets a {@link Vix} instance for a given path.
      *
      * @param libraryPath The path to vix.
@@ -70,6 +80,23 @@ public class VixLibraryManager {
 
             }
             return instance;
+        }
+    }
+
+    /**
+     * Gets the {@link hudson.plugins.vmware.vix.VixHost} for a given {@link hudson.plugins.vmware.vix.VixHostConfig}
+     *
+     * @param config of type VixHostConfig
+     * @return VixHost
+     */
+    public static VixHost getHostInstance(VixHostConfig config) {
+        synchronized (HOST_INSTANCES_LOCK) {
+            VixHost host = HOST_INSTANCES.get(config);
+            if (host == null) {
+                host = VixHost.newInstance(config);
+                HOST_INSTANCES.put(config, host);
+            }
+            return host;
         }
     }
 
