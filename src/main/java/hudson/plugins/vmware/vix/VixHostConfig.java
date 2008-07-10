@@ -213,6 +213,14 @@ public final class VixHostConfig implements Serializable {
                 '}';
     }
 
+    /**
+     * Returns a pseudo-uri for the host.
+     * @return The pseudo-uri
+     */
+    public String toPseudoUri() {
+        return "vix://" + username + "@" + hostName + ":" + portNumber + "/";
+    }
+
 // -------------------------- OTHER METHODS --------------------------
 
     /**

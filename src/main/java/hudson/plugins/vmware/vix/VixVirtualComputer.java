@@ -1,7 +1,6 @@
 package hudson.plugins.vmware.vix;
 
 import com.sun.jna.ptr.IntByReference;
-import hudson.plugins.vmware.Host;
 import hudson.plugins.vmware.VMwareRuntimeException;
 
 import java.util.logging.Logger;
@@ -14,18 +13,30 @@ import java.util.logging.Logger;
  */
 public class VixVirtualComputer extends VixObject {
     private VixVirtualComputerConfig config;
+    private final Object handleLock = new Object();
 
-    public static VixVirtualComputer newInstance(VixHost fileHostPath, String configFileHostPath) {
-        return null;  //To change body of created methods use File | Settings | File Templates.
+    public static VixVirtualComputer newInstance(VixHost hostPath, VixVirtualComputerConfig config) {
+        return new VixVirtualComputer(hostPath.getLibrary(), hostPath.getHandle(), config);
     }
 
-    private static final Logger LOGGER = Logger.getLogger(Host.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(VixVirtualComputer.class.getName());
     private int handle = 0;
 
     VixVirtualComputer(Vix library, int hostHandle, VixVirtualComputerConfig config) {
         super(library);
         this.config = config;
         open(hostHandle);
+    }
+
+    public String toString() {
+        StringBuffer buf = new StringBuffer("VixVirtualComputer");
+        buf.append('[');
+        buf.append("config = ");
+        buf.append(config);
+        buf.append(']');
+        buf.append("->");
+        buf.append(super.toString());
+        return buf.toString();
     }
 
     private void open(int hostHandle) {
@@ -371,8 +382,10 @@ public class VixVirtualComputer extends VixObject {
     }
 
     private void checkOpen() {
+        synchronized (handleLock) {
         if (handle == 0 || getLibrary() == null) {
             throw new IllegalStateException("Not connected.");
+        }
         }
     }
 

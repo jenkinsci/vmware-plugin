@@ -1,8 +1,6 @@
 package hudson.plugins.vmware;
 
 import hudson.Plugin;
-import hudson.PluginWrapper;
-import hudson.plugins.vmware.vix.Vix;
 import hudson.model.Hudson;
 import hudson.slaves.ComputerLauncher;
 import hudson.tasks.BuildWrappers;
@@ -21,9 +19,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-import java.util.logging.Level;
-
-import com.sun.jna.Native;
 
 /**
  * Entry point of vmware plugin.
@@ -32,7 +27,7 @@ import com.sun.jna.Native;
  * @plugin
  */
 public class PluginImpl extends Plugin {
-             
+
     /**
      * Returns the plugin instance.
      *

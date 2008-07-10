@@ -80,4 +80,14 @@ public final class VixVirtualComputerConfig {
                 ", vmxFilePath='" + vmxFilePath + '\'' +
                 '}';
     }
+
+    /**
+     * Returns a pseudo-uri for the host.
+     *
+     * @return The pseudo-uri
+     */
+    public String toPseudoUri() {
+        return host.toPseudoUri() + vmxFilePath.replace('\\','/');
+    }
+
 }
