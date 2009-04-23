@@ -12,7 +12,7 @@
     <packaging>hpi</packaging>
     <version>0.9-SNAPSHOT</version>
     <name>Hudson VMware plugin</name>
-    <url>http://hudson.gotdns.com/wiki/display/HUDSON/VMware+plugin</url>
+    <url>http://wiki.hudson-ci.org/display/HUDSON/VMware+plugin</url>
 
     <dependencies>
         <dependency>
