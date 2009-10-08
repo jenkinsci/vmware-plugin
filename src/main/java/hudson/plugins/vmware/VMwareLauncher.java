@@ -1,8 +1,10 @@
 package hudson.plugins.vmware;
 
+import hudson.Extension;
 import java.util.List;
 
 import hudson.model.Descriptor;
+import hudson.model.TaskListener;
 import hudson.plugins.vmware.vix.VixHost;
 import hudson.plugins.vmware.vix.VixHostConfig;
 import hudson.plugins.vmware.vix.VixLibraryManager;
@@ -11,7 +13,6 @@ import hudson.plugins.vmware.vix.VixVirtualComputerConfig;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.SlaveComputer;
 import hudson.slaves.JNLPLauncher;
-import hudson.util.StreamTaskListener;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -29,29 +30,31 @@ public class VMwareLauncher extends JNLPLauncher {
         this.virtualMachine = virtualMachine;
     }
 
-    public void launch(SlaveComputer slaveComputer, StreamTaskListener streamTaskListener) {
-        streamTaskListener.getLogger().println("[VMware] Opening virtual machine...");
+    @Override
+    public void launch(SlaveComputer slaveComputer, TaskListener taskListener) {
+        taskListener.getLogger().println("[VMware] Opening virtual machine...");
         VixHost host = VixLibraryManager.getHostInstance(virtualMachine.getHost());
         VixVirtualComputer vm = host.open(virtualMachine);
         try {
-            streamTaskListener.getLogger().println("[VMware] Powering up virtual machine...");
+            taskListener.getLogger().println("[VMware] Powering up virtual machine...");
             vm.powerOn();
-            streamTaskListener.getLogger().println("[VMware] Launching slave process...");
+            taskListener.getLogger().println("[VMware] Launching slave process...");
         } finally {
             host.close(vm);
         }
-        super.launch(slaveComputer, streamTaskListener);
+        super.launch(slaveComputer, taskListener);
     }
 
 
 
-    public void afterDisconnect(SlaveComputer slaveComputer, StreamTaskListener streamTaskListener) {
-        super.afterDisconnect(slaveComputer, streamTaskListener);
-        streamTaskListener.getLogger().println("[VMware] Closing virtual machine...");
+    @Override
+    public void afterDisconnect(SlaveComputer slaveComputer, TaskListener taskListener) {
+        super.afterDisconnect(slaveComputer, taskListener);
+        taskListener.getLogger().println("[VMware] Closing virtual machine...");
         VixHost host = VixLibraryManager.getHostInstance(virtualMachine.getHost());
         VixVirtualComputer vm = host.open(virtualMachine);
         try {
-        streamTaskListener.getLogger().println("[VMware] Powering down virtual machine...");
+        taskListener.getLogger().println("[VMware] Powering down virtual machine...");
         vm.powerOff();
         } finally {
             host.close(vm);
@@ -62,15 +65,10 @@ public class VMwareLauncher extends JNLPLauncher {
         return virtualMachine;
     }
 
-    public Descriptor<ComputerLauncher> getDescriptor() {
-        return DESCRIPTOR;
-    }
+    @Extension
+    public static class DescriptorImpl extends Descriptor<ComputerLauncher> {
 
-    public static final Descriptor<ComputerLauncher> DESCRIPTOR = new DescriptorImpl();
-
-    private static class DescriptorImpl extends Descriptor<ComputerLauncher> {
-
-        protected DescriptorImpl() {
+        public DescriptorImpl() {
             super(VMwareLauncher.class);
         }
 

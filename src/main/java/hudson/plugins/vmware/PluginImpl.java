@@ -1,14 +1,13 @@
 package hudson.plugins.vmware;
 
 import hudson.Plugin;
+import static hudson.Util.fixNull;
 import hudson.model.Hudson;
-import hudson.slaves.ComputerLauncher;
-import hudson.tasks.BuildWrappers;
-import hudson.util.FormFieldValidator;
+import hudson.util.FormValidation;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
-import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
@@ -47,6 +46,7 @@ public class PluginImpl extends Plugin {
             this.refCount = 1;
         }
 
+        @Override
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
@@ -57,6 +57,7 @@ public class PluginImpl extends Plugin {
             return closeable == that.closeable;
         }
 
+        @Override
         public int hashCode() {
             return System.identityHashCode(closeable);
         }
@@ -76,11 +77,6 @@ public class PluginImpl extends Plugin {
     private static final ConcurrentMap<String, String> vmIPAddresses = new ConcurrentHashMap<String, String>();
     private static final ConcurrentMap<String, CountDownLatch> nameLatches = new ConcurrentHashMap<String, CountDownLatch>();
     private final String URL_PREFIX = "file:/";
-
-    public void start() throws Exception {
-        BuildWrappers.WRAPPERS.add(VMwareActivationWrapper.DESCRIPTOR);
-        ComputerLauncher.LIST.add(VMwareLauncher.DESCRIPTOR);
-    }
 
     public static String findDefaultVixLibraryPath() {
         if (System.getProperty("os.name").toLowerCase().startsWith("windows")) {
@@ -105,26 +101,21 @@ public class PluginImpl extends Plugin {
     /**
      * Checks if the VIX path is a valid VIX path.
      */
-    public void doVixLibraryCheck(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public FormValidation doVixLibraryCheck(@QueryParameter final String value) {
         // this can be used to check the existence of a file on the server, so needs to be protected
-        new FormFieldValidator(req, rsp, true) {
-            public void check() throws IOException, ServletException {
-                File f = getFileParameter("value");
-                if (!f.isDirectory()) {
-                    error(Messages.PluginImpl_NotADirectory(f));
-                    return;
-                }
+        if (!Hudson.getInstance().hasPermission(Hudson.ADMINISTER)) return FormValidation.ok();
+        File f = new File(fixNull(value));
+        if (!f.isDirectory()) {
+            return FormValidation.error(Messages.PluginImpl_NotADirectory(f));
+        }
 
-                File winDll = new File(f, "vix.dll");
-                File linuxSO = new File(f, "libvix.so");
-                if (!winDll.exists() && !linuxSO.exists()) {
-                    error(Messages.PluginImpl_NotAVixLibraryDirectory(f));
-                    return;
-                }
+        File winDll = new File(f, "vix.dll");
+        File linuxSO = new File(f, "libvix.so");
+        if (!winDll.exists() && !linuxSO.exists()) {
+            return FormValidation.error(Messages.PluginImpl_NotAVixLibraryDirectory(f));
+        }
 
-                ok();
-            }
-        }.process();
+        return FormValidation.ok();
     }
 
     /**

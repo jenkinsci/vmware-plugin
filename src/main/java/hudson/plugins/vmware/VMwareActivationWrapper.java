@@ -8,9 +8,9 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
+import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
-import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Resource;
@@ -23,6 +23,7 @@ import hudson.plugins.vmware.vix.VixHost;
 import hudson.plugins.vmware.vix.VixLibraryManager;
 import hudson.plugins.vmware.vix.VixVirtualComputerConfig;
 import hudson.tasks.BuildWrapper;
+import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -119,7 +120,7 @@ public class VMwareActivationWrapper extends BuildWrapper implements ResourceAct
             public VMC(VixVirtualComputer vm, VixHost host, VMActivationConfig cfg) {
                 this.vm = vm;
                 this.host = host;
-                this.powerTime = powerTime;
+                this.powerTime = powerTime; //XXX this does nothing
                 this.cfg = cfg;
             }
 
@@ -265,7 +266,8 @@ public class VMwareActivationWrapper extends BuildWrapper implements ResourceAct
                 this.vms = vms;
             }
 
-            public boolean tearDown(Build build, BuildListener buildListener) throws IOException, InterruptedException {
+            @Override
+            public boolean tearDown(AbstractBuild build, BuildListener buildListener) throws IOException, InterruptedException {
                 for (VMC vm : vms) {
                     vm.powerDown(buildListener);
                 }
@@ -326,10 +328,12 @@ public class VMwareActivationWrapper extends BuildWrapper implements ResourceAct
         return new EnvironmentImpl(vms);
     }
 
+    @Override
     public Descriptor<BuildWrapper> getDescriptor() {
         return DESCRIPTOR;
     }
 
+    @Extension
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     public ResourceList getResourceList() {
@@ -357,18 +361,20 @@ public class VMwareActivationWrapper extends BuildWrapper implements ResourceAct
             return Messages.VMwareActivationWrapper_DescriptorImpl_DisplayName();
         }
 
-        public VMwareActivationWrapper newInstance(StaplerRequest req) throws FormException {
+        @Override
+        public VMwareActivationWrapper newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             VMwareActivationWrapper w = new VMwareActivationWrapper();
             req.bindParameters(w, "vmware-activation.");
             w.setMachines(req.bindParametersToList(VMActivationConfig.class, "vmware-activation.machine."));
             return w;
         }
 
-        public boolean configure(StaplerRequest req) throws FormException {
+        @Override
+        public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
             req.bindParameters(this, "vmware.");
             hosts = req.bindParametersToList(VixHostConfig.class, "vmware.host.");
             save();
-            return super.configure(req);
+            return super.configure(req, formData);
         }
 
         public List<VixHostConfig> getHosts() {
@@ -426,6 +432,7 @@ public class VMwareActivationWrapper extends BuildWrapper implements ResourceAct
         private final int feedbackTimeout;
         private final VixVirtualComputerConfig config;
 
+        @Override
         public String toString() {
             return config.toPseudoUri();
         }
